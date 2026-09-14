@@ -129,7 +129,7 @@ GitHub → your repo → **Settings** → **Secrets and variables** → **Action
 
 | Secret | Value |
 |---|---|
-| `CPANEL_HOST` | your server hostname or IP (cPanel sidebar → *Shared IP Address*) |
+| `CPANEL_HOST` | your **server** hostname, not your domain — see the note below |
 | `CPANEL_USER` | your cPanel username |
 | `CPANEL_SSH_KEY` | the **private** key from Step 6 (whole file, including the BEGIN/END lines) |
 | `CPANEL_API_PATH` | `/home/youruser/apps/api` |
@@ -143,7 +143,7 @@ GitHub → your repo → **Settings** → **Secrets and variables** → **Action
 | `NEXT_PUBLIC_SITE_URL` | `https://yourdomain.com` |
 | `NEXT_PUBLIC_API_URL` | `https://api.yourdomain.com` |
 | `API_INTERNAL_URL` | `https://api.yourdomain.com` (optional — defaults to the value above) |
-| `CPANEL_SSH_PORT` | your SSH port — `22` on most cPanel hosts, `65002` on Hostinger |
+| `CPANEL_SSH_PORT` | your SSH port — **not always 22**, see the table below |
 | `NEXT_PUBLIC_ADSENSE_CLIENT` | leave empty until AdSense approves you |
 | `NEXT_PUBLIC_GA_ID` | your GA4 ID, or leave empty |
 | `NEXT_PUBLIC_GSC_VERIFICATION` | your Search Console code, or leave empty |
@@ -151,6 +151,36 @@ GitHub → your repo → **Settings** → **Secrets and variables** → **Action
 > These are **variables**, not secrets, because they are compiled into the public
 > JavaScript bundle and are visible to anyone who views the site. Nothing secret
 > belongs here. Secrets stay in the Secrets tab, where GitHub masks them in logs.
+
+---
+
+### Finding your host and port
+
+Use the **server** hostname, not your domain. Your domain may point through
+Cloudflare, may not have propagated yet, or may resolve differently from your
+machine than from GitHub's runners — the server hostname always works.
+
+Find it in cPanel: the sidebar shows *Shared IP Address*, and the **General
+Information** panel shows the server name. A reverse lookup also reveals it:
+
+```bash
+dig +short yourdomain.com          # -> 162.0.235.120
+dig +short -x 162.0.235.120        # -> premium147-2.web-hosting.com
+```
+
+SSH ports differ by provider, and using the wrong one looks exactly like a
+firewall block:
+
+| Provider | Server hostname looks like | SSH port |
+|---|---|---|
+| Namecheap | `premium123.web-hosting.com` | **21098** |
+| Hostinger | `srv123.hostinger.com` | **65002** |
+| A2 / InMotion / most others | varies | `7822` or `22` |
+
+The authoritative answer is in cPanel → **SSH Access** → *Manage SSH Keys*, which
+displays the port your account uses. On shared plans SSH is sometimes disabled by
+default — Namecheap, for example, requires you to enable it from your account
+dashboard before it will accept connections.
 
 ---
 
@@ -172,7 +202,13 @@ Paste the contents of the `.pub` file, save, then click **Manage** → **Authori
 Confirm it works before relying on it (use your SSH port):
 
 ```bash
-ssh -i ~/.ssh/cpanel_deploy -p 22 youruser@yourdomain.com "echo connected"
+ssh -i ~/.ssh/cpanel_deploy -p YOUR_PORT youruser@your-server-hostname "echo connected"
+```
+
+For example, on Namecheap:
+
+```bash
+ssh -i ~/.ssh/cpanel_deploy -p 21098 youruser@premium147.web-hosting.com "echo connected"
 ```
 
 If that prints `connected`, you are ready. If it asks for a password, the key was
@@ -247,6 +283,17 @@ empty commit to re-run the deploy.
 **Deploy fails at "Configure SSH"**
 Wrong host, wrong port, or the key was not authorized. Re-run the `ssh -i ...`
 test from Step 6 — the workflow can only do what that command can do.
+
+**`ssh: Could not resolve hostname`**
+DNS, not SSH — the connection never started. Check the name resolves at all with
+`dig +short yourdomain.com`. If it resolves elsewhere but not on your machine,
+your resolver is holding a stale negative cache; on macOS clear it with
+`sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`. Using the server
+hostname instead of the domain sidesteps this entirely.
+
+**`Connection refused` or the connection hangs**
+Almost always the wrong port — see the port table above — or SSH is not enabled
+for the account yet. Confirm both in cPanel → SSH Access.
 
 **`pip install` fails on `cryptography`**
 Some older cPanel images cannot build it. In the app's virtualenv, run
