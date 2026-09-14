@@ -300,6 +300,30 @@ that would hit this now fails on purpose with a message naming both URLs.
 Passenger caches workers. Restart both apps from their cPanel pages, or push an
 empty commit to re-run the deploy.
 
+**`error in libcrypto` then `Permission denied (publickey...)` during deploy**
+The key stored in `CPANEL_SSH_KEY` is malformed — OpenSSH could not parse it, so
+it never offered a key and fell back to a password. The same key working from
+your own terminal does not contradict this: locally SSH reads the intact file on
+disk, while the runner reads whatever text was pasted into the secret.
+
+Re-copy the file byte-exact instead of selecting it from terminal output:
+
+```bash
+pbcopy < ~/.ssh/cpanel_deploy                  # macOS
+xclip -selection clipboard < ~/.ssh/cpanel_deploy   # Linux
+```
+
+Paste that into the secret. It must span many lines, start with
+`-----BEGIN OPENSSH PRIVATE KEY-----`, end with the matching `END` line, and be
+the file **without** the `.pub` extension. Confirm it has no passphrase — a
+deploy key cannot have one, because nothing can type it:
+
+```bash
+ssh-keygen -y -f ~/.ssh/cpanel_deploy > /dev/null && echo valid
+```
+
+The workflow now checks this itself and names the specific fault.
+
 **Deploy fails at "Configure SSH"**
 Wrong host, wrong port, or the key was not authorized. Re-run the `ssh -i ...`
 test from Step 6 — the workflow can only do what that command can do.
