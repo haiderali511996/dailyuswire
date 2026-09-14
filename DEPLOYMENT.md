@@ -196,8 +196,19 @@ That writes two files:
 - `~/.ssh/cpanel_deploy` — **private**. Goes into the `CPANEL_SSH_KEY` GitHub secret.
 - `~/.ssh/cpanel_deploy.pub` — **public**. Goes onto the server.
 
-Install the public key: cPanel → **SSH Access** → *Manage SSH Keys* → *Import Key*.
-Paste the contents of the `.pub` file, save, then click **Manage** → **Authorize**.
+Install the public key. The quickest route, if password login works, is:
+
+```bash
+ssh-copy-id -i ~/.ssh/cpanel_deploy.pub -p YOUR_PORT youruser@your-server-hostname
+```
+
+Or through the UI: cPanel → **SSH Access** → *Manage SSH Keys* → *Import Key*.
+Paste the contents of the `.pub` file (`cat ~/.ssh/cpanel_deploy.pub`), leave the
+passphrase blank, save — then click **Manage** → **Authorize**.
+
+> **Authorize is a separate step and the one people miss.** An imported but
+> unauthorized key is ignored, and the server quietly falls back to asking for a
+> password.
 
 Confirm it works before relying on it (use your SSH port):
 
@@ -294,6 +305,24 @@ hostname instead of the domain sidesteps this entirely.
 **`Connection refused` or the connection hangs**
 Almost always the wrong port — see the port table above — or SSH is not enabled
 for the account yet. Confirm both in cPanel → SSH Access.
+
+**SSH asks for a password instead of using the key**
+The host and port are correct — the key just is not being accepted. Run the
+connection verbosely to see which of three things is wrong:
+
+```bash
+ssh -v -i ~/.ssh/cpanel_deploy -p YOUR_PORT youruser@your-server-hostname 2>&1 \
+  | grep -iE "offering|Authentications that can continue|denied"
+```
+
+| What you see | Cause | Fix |
+|---|---|---|
+| No `Offering public key` line | ssh is not using your key | `chmod 600 ~/.ssh/cpanel_deploy` |
+| Offers the key, still prompts | Key imported but not authorized | cPanel → Manage SSH Keys → **Authorize** |
+| `Authentications that can continue: password` only | Key auth disabled for the account | Enable SSH in your host's dashboard, not cPanel |
+
+Confirm the server has the key you are actually using by comparing fingerprints:
+`ssh-keygen -lf ~/.ssh/cpanel_deploy.pub` should match the entry cPanel lists.
 
 **`pip install` fails on `cryptography`**
 Some older cPanel images cannot build it. In the app's virtualenv, run
