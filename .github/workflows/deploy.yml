@@ -260,9 +260,36 @@ jobs:
             API_PATH="$API_PATH" WEB_PATH="$WEB_PATH" PY_ACTIVATE="$PY_ACTIVATE" 'bash -s' <<'REMOTE'
           set -euo pipefail
 
-          echo "==> Python dependencies"
+          echo "==> Python environment"
+          if [ ! -f "$PY_ACTIVATE" ]; then
+            echo "ERROR: no virtualenv at $PY_ACTIVATE"
+            echo "CPANEL_PY_ACTIVATE must be the activate script cPanel created for the"
+            echo "Python app. Available environments on this account:"
+            find "$HOME/virtualenv" -name activate -path '*/bin/*' 2>/dev/null | sed 's/^/  /'
+            exit 1
+          fi
           # shellcheck disable=SC1090
           source "$PY_ACTIVATE"
+
+          # cPanel's Python-app dropdown still offers versions this stack cannot
+          # run. Check before pip spends minutes failing to resolve wheels.
+          PYV=$(python -c 'import sys; print("%d.%d" % sys.version_info[:2])')
+          PYOK=$(python -c 'import sys; print(1 if sys.version_info[:2] >= (3, 11) else 0)')
+          echo "    python $PYV at $(command -v python)"
+          if [ "$PYOK" != "1" ]; then
+            echo ""
+            echo "ERROR: this app requires Python 3.11 or newer, found $PYV."
+            echo "SQLAlchemy 2.0, Pydantic v2 and the 'X | None' annotations used"
+            echo "throughout will not run on it."
+            echo ""
+            echo "Fix: cPanel > Setup Python App > destroy the app for $API_PATH,"
+            echo "recreate it with the newest Python offered (3.11+), keeping the same"
+            echo "application root, URL, startup file and entry point. Then update the"
+            echo "CPANEL_PY_ACTIVATE secret - the version number is part of the path."
+            exit 1
+          fi
+
+          echo "==> Python dependencies"
           cd "$API_PATH"
           pip install --quiet --upgrade pip
           pip install --quiet -r requirements.txt

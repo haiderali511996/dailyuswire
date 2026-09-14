@@ -57,11 +57,18 @@ cPanel → **Setup Python App** → *Create Application*
 
 | Field | Value |
 |---|---|
-| Python version | 3.11 or newer |
+| Python version | **3.11 or newer** — see the warning below |
 | Application root | `apps/api` |
 | Application URL | `api.yourdomain.com` |
 | Application startup file | `passenger_wsgi.py` |
 | Application Entry point | `application` |
+
+> **Check the Python version carefully.** cPanel's dropdown often still lists
+> ancient versions, and on some accounts defaults to one. Anything below 3.11
+> cannot run this stack — SQLAlchemy 2.0, Pydantic v2 and the `X | None`
+> annotations used throughout all require it, and `pip install` fails outright.
+> The version number becomes part of the virtualenv path, so changing it later
+> means recreating the app and updating `CPANEL_PY_ACTIVATE`.
 
 Click **Create**, then scroll to **Environment variables** and add these. Click
 *Add Variable* for each, then **Save**:
