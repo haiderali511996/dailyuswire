@@ -161,6 +161,7 @@ jobs:
             exit 1
           fi
           echo "Private key parsed successfully."
+          echo "  fingerprint: $(ssh-keygen -lf ~/.ssh/deploy_key 2>/dev/null)"
 
           # Pin the host key so the deploy fails loudly rather than trusting
           # whatever answers on first connect.
@@ -171,6 +172,47 @@ jobs:
             echo "Check CPANEL_HOST and CPANEL_SSH_PORT (Namecheap uses 21098, Hostinger 65002)."
             exit 1
           fi
+          echo "Host key collected for $SSH_HOST:$SSH_PORT."
+
+      # Prove authentication works before rsync, so a rejected key is reported
+      # here with its remedy instead of as an rsync exit code 255.
+      - name: Verify SSH authentication
+        env:
+          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || secrets.CPANEL_SSH_PORT || '22' }}
+          SSH_TARGET: ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}
+        run: |
+          set -uo pipefail
+          # BatchMode stops SSH falling back to an interactive password prompt,
+          # which on a runner just produces three silent retries and a timeout.
+          if ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" \
+                 -o BatchMode=yes -o StrictHostKeyChecking=yes \
+                 -o ConnectTimeout=20 "$SSH_TARGET" 'echo AUTH_OK'; then
+            echo "SSH authentication succeeded."
+            exit 0
+          fi
+
+          echo "::error::The server rejected this key. It parsed correctly, so the key itself is fine - the matching public key is not authorised for this account."
+          echo ""
+          echo "Authorise EXACTLY this public key on the server. It is derived from"
+          echo "the private key in CPANEL_SSH_KEY, so it is guaranteed to match:"
+          echo ""
+          echo "-----------------------------------------------------------"
+          ssh-keygen -y -f ~/.ssh/deploy_key
+          echo "-----------------------------------------------------------"
+          echo ""
+          echo "Either paste it into cPanel > SSH Access > Manage SSH Keys > Import Key,"
+          echo "then click Manage > Authorize. Or append it from a machine that can"
+          echo "already log in:"
+          echo ""
+          echo "  echo 'PASTE_THE_KEY_ABOVE' >> ~/.ssh/authorized_keys"
+          echo "  chmod 600 ~/.ssh/authorized_keys && chmod 700 ~/.ssh"
+          echo ""
+          echo "Then compare fingerprints - these two must match:"
+          echo "  this key            : $(ssh-keygen -lf ~/.ssh/deploy_key 2>/dev/null)"
+          echo "  server's authorised : ssh-keygen -lf ~/.ssh/authorized_keys   (run on the server)"
+          echo ""
+          echo "Also confirm CPANEL_USER is the cPanel account name."
+          exit 1
 
       - name: Upload the front end
         env:
@@ -179,7 +221,7 @@ jobs:
         run: |
           set -euo pipefail
           rsync -az --delete \
-            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=yes" \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=yes -o BatchMode=yes" \
             --exclude '.env' \
             --exclude 'tmp/' \
             deploy/web/ "$TARGET"
@@ -193,7 +235,7 @@ jobs:
           # --delete keeps the server clean, but uploaded images, the server's
           # own .env and the cPanel-managed virtualenv must survive it.
           rsync -az --delete \
-            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=yes" \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=yes -o BatchMode=yes" \
             --exclude '.env' \
             --exclude 'media/' \
             --exclude 'tmp/' \
@@ -214,13 +256,40 @@ jobs:
           PY_ACTIVATE: ${{ secrets.CPANEL_PY_ACTIVATE }}
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o StrictHostKeyChecking=yes "$SSH_TARGET" \
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o StrictHostKeyChecking=yes -o BatchMode=yes "$SSH_TARGET" \
             API_PATH="$API_PATH" WEB_PATH="$WEB_PATH" PY_ACTIVATE="$PY_ACTIVATE" 'bash -s' <<'REMOTE'
           set -euo pipefail
 
-          echo "==> Python dependencies"
+          echo "==> Python environment"
+          if [ ! -f "$PY_ACTIVATE" ]; then
+            echo "ERROR: no virtualenv at $PY_ACTIVATE"
+            echo "CPANEL_PY_ACTIVATE must be the activate script cPanel created for the"
+            echo "Python app. Available environments on this account:"
+            find "$HOME/virtualenv" -name activate -path '*/bin/*' 2>/dev/null | sed 's/^/  /'
+            exit 1
+          fi
           # shellcheck disable=SC1090
           source "$PY_ACTIVATE"
+
+          # cPanel's Python-app dropdown still offers versions this stack cannot
+          # run. Check before pip spends minutes failing to resolve wheels.
+          PYV=$(python -c 'import sys; print("%d.%d" % sys.version_info[:2])')
+          PYOK=$(python -c 'import sys; print(1 if sys.version_info[:2] >= (3, 11) else 0)')
+          echo "    python $PYV at $(command -v python)"
+          if [ "$PYOK" != "1" ]; then
+            echo ""
+            echo "ERROR: this app requires Python 3.11 or newer, found $PYV."
+            echo "SQLAlchemy 2.0, Pydantic v2 and the 'X | None' annotations used"
+            echo "throughout will not run on it."
+            echo ""
+            echo "Fix: cPanel > Setup Python App > destroy the app for $API_PATH,"
+            echo "recreate it with the newest Python offered (3.11+), keeping the same"
+            echo "application root, URL, startup file and entry point. Then update the"
+            echo "CPANEL_PY_ACTIVATE secret - the version number is part of the path."
+            exit 1
+          fi
+
+          echo "==> Python dependencies"
           cd "$API_PATH"
           pip install --quiet --upgrade pip
           pip install --quiet -r requirements.txt
