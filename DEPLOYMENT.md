@@ -76,7 +76,7 @@ cPanel → **Setup Python App** → *Create Application*
 | Python version | **3.11 or newer** — see the warning below |
 | Application root | `apps/api` |
 | Application URL | `api.yourdomain.com` |
-| Application startup file | `passenger_wsgi.py` |
+| Application startup file | `wsgi.py` — **not** `passenger_wsgi.py`, see below |
 | Application Entry point | `application` |
 
 > **Check the Python version carefully.** cPanel's dropdown often still lists
@@ -85,6 +85,14 @@ cPanel → **Setup Python App** → *Create Application*
 > annotations used throughout all require it, and `pip install` fails outright.
 > The version number becomes part of the virtualenv path, so changing it later
 > means recreating the app and updating `CPANEL_PY_ACTIVATE`.
+
+> **Do not set the startup file to `passenger_wsgi.py`.** cPanel generates its
+> own `passenger_wsgi.py` — overwriting whatever is already there — holding a
+> stub that loads the file you name in this field. Naming it `passenger_wsgi.py`
+> makes that stub load itself, and the app dies with
+> `RecursionError: maximum recursion depth exceeded`. The repository ships
+> `wsgi.py` for exactly this reason, and the deploy leaves cPanel's generated
+> stub alone.
 
 Click **Create**, then scroll to **Environment variables** and add these. Click
 *Add Variable* for each, then **Save**:
@@ -301,6 +309,11 @@ starter articles.
 ---
 
 ## Troubleshooting
+
+**`RecursionError: maximum recursion depth exceeded` in the API log**
+The Python app's startup file is set to `passenger_wsgi.py`. cPanel's generated
+stub at that path loads the file you named, so it loads itself. Set
+**Application startup file** to `wsgi.py` in Setup Python App, then Restart.
 
 **"We're sorry, but something went wrong" on the API**
 Passenger is hiding the real error. cPanel → Setup Python App → open the app →

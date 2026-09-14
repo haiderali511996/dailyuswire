@@ -1,15 +1,21 @@
-"""Passenger entry point for cPanel's "Setup Python App".
+"""WSGI entry point for cPanel's "Setup Python App".
 
 cPanel runs Python apps under Phusion Passenger, which speaks WSGI. FastAPI is
 an ASGI app, so it is wrapped with a2wsgi here.
 
 In cPanel > Setup Python App, set:
-    Application startup file : passenger_wsgi.py
+    Application startup file : wsgi.py
     Application Entry point  : application
 
-Passenger does not run ASGI lifespan events, so first-run setup (create tables,
-seed the eight categories, create the admin user) is called explicitly below
-instead of relying on the FastAPI lifespan handler.
+This file must NOT be called passenger_wsgi.py. cPanel generates its own
+passenger_wsgi.py - overwriting anything already at that path - containing a
+stub that loads the file named in "Application startup file". Naming that field
+passenger_wsgi.py makes the stub load itself, and Passenger dies with
+"RecursionError: maximum recursion depth exceeded".
+
+Passenger also does not run ASGI lifespan events, so first-run setup (create
+tables, seed the eight categories, create the admin user) is called explicitly
+below instead of relying on the FastAPI lifespan handler.
 """
 
 import os
