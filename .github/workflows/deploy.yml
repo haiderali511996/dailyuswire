@@ -1,0 +1,169 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never let two deploys overwrite each other mid-rsync.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # The site is built here rather than on the server: shared cPanel accounts
+      # are CPU- and memory-capped, and a Next.js build will often be killed
+      # mid-flight. The runner ships a finished bundle instead.
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build the front end
+        working-directory: frontend
+        env:
+          # NEXT_PUBLIC_* values are inlined at build time, so they must be
+          # present here - setting them on the server afterwards has no effect.
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          # Rewrite destinations are frozen into routes-manifest.json during the
+          # build, so the /media proxy target has to be right here too.
+          API_INTERNAL_URL: ${{ vars.API_INTERNAL_URL || vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_ADSENSE_CLIENT: ${{ vars.NEXT_PUBLIC_ADSENSE_CLIENT }}
+          NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID }}
+          NEXT_PUBLIC_GSC_VERIFICATION: ${{ vars.NEXT_PUBLIC_GSC_VERIFICATION }}
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: npm run build
+
+      - name: Assemble the deployable front end
+        run: |
+          set -euo pipefail
+          rm -rf deploy/web && mkdir -p deploy/web
+          # Standalone output: server.js plus only the node_modules it needs.
+          cp -r frontend/.next/standalone/. deploy/web/
+          mkdir -p deploy/web/.next
+          cp -r frontend/.next/static deploy/web/.next/static
+          cp -r frontend/public deploy/web/public
+          # cPanel's default Node startup filename is app.js.
+          cp frontend/passenger-app.js deploy/web/app.js
+          mkdir -p deploy/web/tmp
+          echo "Front-end bundle: $(du -sh deploy/web | cut -f1)"
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.CPANEL_SSH_KEY }}
+          SSH_HOST: ${{ secrets.CPANEL_HOST }}
+          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pin the host key so the deploy fails loudly rather than trusting
+          # whatever answers on first connect.
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Upload the front end
+        env:
+          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || '22' }}
+          TARGET: ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_WEB_PATH }}/
+        run: |
+          set -euo pipefail
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=yes" \
+            --exclude '.env' \
+            --exclude 'tmp/' \
+            deploy/web/ "$TARGET"
+
+      - name: Upload the backend
+        env:
+          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || '22' }}
+          TARGET: ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_API_PATH }}/
+        run: |
+          set -euo pipefail
+          # --delete keeps the server clean, but uploaded images, the server's
+          # own .env and the cPanel-managed virtualenv must survive it.
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=yes" \
+            --exclude '.env' \
+            --exclude 'media/' \
+            --exclude 'tmp/' \
+            --exclude '.venv/' \
+            --exclude '__pycache__/' \
+            --exclude '*.pyc' \
+            --exclude '*.db' \
+            --exclude '*.db-shm' \
+            --exclude '*.db-wal' \
+            backend/ "$TARGET"
+
+      - name: Install dependencies and restart both apps
+        env:
+          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || '22' }}
+          SSH_TARGET: ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}
+          API_PATH: ${{ secrets.CPANEL_API_PATH }}
+          WEB_PATH: ${{ secrets.CPANEL_WEB_PATH }}
+          PY_ACTIVATE: ${{ secrets.CPANEL_PY_ACTIVATE }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o StrictHostKeyChecking=yes "$SSH_TARGET" \
+            API_PATH="$API_PATH" WEB_PATH="$WEB_PATH" PY_ACTIVATE="$PY_ACTIVATE" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+
+          echo "==> Python dependencies"
+          # shellcheck disable=SC1090
+          source "$PY_ACTIVATE"
+          cd "$API_PATH"
+          pip install --quiet --upgrade pip
+          pip install --quiet -r requirements.txt
+          mkdir -p media tmp
+
+          echo "==> Restarting the Python app"
+          # Passenger reloads when this file's mtime changes.
+          touch tmp/restart.txt
+
+          echo "==> Restarting the Node app"
+          mkdir -p "$WEB_PATH/tmp"
+          touch "$WEB_PATH/tmp/restart.txt"
+
+          echo "==> Done"
+          REMOTE
+
+      - name: Verify the deployment
+        env:
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+        run: |
+          set -euo pipefail
+          # Passenger starts workers lazily, so the first request may be slow.
+          for attempt in 1 2 3 4 5 6; do
+            api=$(curl -fsS --max-time 30 "$API_URL/health" 2>/dev/null || echo "")
+            if [ -n "$api" ]; then
+              echo "API healthy: $api"
+              break
+            fi
+            echo "API not up yet (attempt $attempt), waiting..."
+            sleep 10
+            [ "$attempt" = "6" ] && { echo "::error::API did not come back up"; exit 1; }
+          done
+
+          site=$(curl -fsS -o /dev/null -w '%{http_code}' --max-time 30 "$SITE_URL/") || site=000
+          echo "Site returned HTTP $site"
+          [ "$site" = "200" ] || { echo "::error::Site did not return 200"; exit 1; }
+
+          echo "Deployment verified."

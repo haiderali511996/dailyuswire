@@ -10,6 +10,7 @@ Policy note (deliberate design):
 
 from __future__ import annotations
 
+import asyncio
 import re
 from datetime import datetime, timezone
 from time import mktime
@@ -18,10 +19,13 @@ import feedparser
 import httpx
 from sqlalchemy.orm import Session
 
-from app.models import Category, FeedItem, FeedSource, Post, PostStatus, User
+from app.models import Category, FeedItem, FeedSource, Post, PostStatus, User, guid_digest
 from app.utils.text import make_excerpt, sanitize_html, strip_tags, unique_slug
 
 USER_AGENT = "DailyUSWireBot/1.0 (+https://dailyuswire.com/about; newsroom aggregator)"
+
+# Keep the burst polite and inside shared-hosting connection limits.
+MAX_CONCURRENT_FETCHES = 6
 
 # Public syndication feeds, one or more per site category.
 DEFAULT_SOURCES: list[dict] = [
@@ -100,34 +104,42 @@ def _extract_image(entry) -> str:
     return ""
 
 
-async def fetch_source(db: Session, source: FeedSource, limit: int = 25) -> tuple[int, str]:
-    """Pull one feed. Returns (new_items, status_message)."""
+async def _download(client: httpx.AsyncClient, url: str) -> tuple[bytes | None, str]:
+    """Fetch one feed body. Never raises - a bad feed must not stop the run."""
     try:
-        async with httpx.AsyncClient(
-            timeout=20, follow_redirects=True, headers={"User-Agent": USER_AGENT}
-        ) as client:
-            response = await client.get(source.url)
-            response.raise_for_status()
-            raw = response.content
-    except Exception as exc:  # noqa: BLE001 - one bad feed must not stop the run
-        source.last_status = f"error: {exc}"[:300]
-        source.last_fetched_at = datetime.now(timezone.utc)
-        db.commit()
-        return 0, source.last_status
+        response = await client.get(url)
+        response.raise_for_status()
+        return response.content, ""
+    except Exception as exc:  # noqa: BLE001 - surfaced to the admin as text
+        return None, f"error: {exc}"[:300]
 
+
+def _store(db: Session, source: FeedSource, raw: bytes, limit: int, seen: set[str]) -> int:
+    """Parse a downloaded feed and persist the new items.
+
+    `seen` carries the digests already queued in this run. Two feeds from the
+    same publisher (NPR News and NPR Health, say) routinely carry the same
+    story, and with autoflush off the pending rows are invisible to the
+    duplicate query - so without this the second one hits a unique violation.
+    """
     parsed = feedparser.parse(raw)
     new_count = 0
     for entry in parsed.entries[:limit]:
         guid = getattr(entry, "id", "") or getattr(entry, "link", "")
         if not guid:
             continue
-        if db.query(FeedItem).filter(FeedItem.guid == guid).one_or_none():
+        digest = guid_digest(guid)
+        if digest in seen:
             continue
+        if db.query(FeedItem).filter(FeedItem.guid_hash == digest).one_or_none():
+            continue
+        seen.add(digest)
         summary_html = getattr(entry, "summary", "") or getattr(entry, "description", "")
         db.add(
             FeedItem(
                 source_id=source.id,
                 guid=guid[:800],
+                guid_hash=digest,
                 title=strip_tags(getattr(entry, "title", ""))[:500] or "Untitled",
                 summary=strip_tags(summary_html)[:1200],
                 link=(getattr(entry, "link", "") or "")[:800],
@@ -139,21 +151,59 @@ async def fetch_source(db: Session, source: FeedSource, limit: int = 25) -> tupl
         )
         new_count += 1
 
-    source.last_fetched_at = datetime.now(timezone.utc)
     source.last_status = f"ok: {new_count} new of {len(parsed.entries)} entries"
-    db.commit()
-    return new_count, source.last_status
+    return new_count
 
 
 async def ingest_all(db: Session, limit_per_source: int = 25) -> dict:
+    """Refresh every active feed.
+
+    Downloads run concurrently and database writes run afterwards on the single
+    request-scoped session. Sequentially this took 30-60s for 18 feeds, which
+    overruns the request timeout on shared hosting; concurrently it is a few
+    seconds, bounded by the slowest feed.
+    """
     sources = db.query(FeedSource).filter(FeedSource.is_active.is_(True)).all()
+    if not sources:
+        return {"sources_checked": 0, "new_items": 0, "errors": []}
+
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT_FETCHES)
+
+    async def fetch(client: httpx.AsyncClient, source: FeedSource):
+        async with semaphore:
+            return await _download(client, source.url)
+
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(20.0, connect=10.0),
+        follow_redirects=True,
+        headers={"User-Agent": USER_AGENT},
+    ) as client:
+        results = await asyncio.gather(*(fetch(client, s) for s in sources))
+
+    now = datetime.now(timezone.utc)
     total_new = 0
     errors: list[str] = []
-    for source in sources:
-        count, status = await fetch_source(db, source, limit=limit_per_source)
-        total_new += count
-        if status.startswith("error"):
-            errors.append(f"{source.name}: {status}")
+    seen: set[str] = set()
+
+    for source, (raw, error) in zip(sources, results):
+        if raw is None:
+            source.last_fetched_at = now
+            source.last_status = error
+            errors.append(f"{source.name}: {error}")
+            db.commit()
+            continue
+        try:
+            total_new += _store(db, source, raw, limit_per_source, seen)
+            source.last_fetched_at = now
+            # Commit per source so one malformed feed cannot roll back the rest.
+            db.commit()
+        except Exception as exc:  # noqa: BLE001 - keep going through the batch
+            db.rollback()
+            source.last_fetched_at = now
+            source.last_status = f"error: could not store items - {exc}"[:300]
+            errors.append(f"{source.name}: {source.last_status}")
+            db.commit()
+
     return {"sources_checked": len(sources), "new_items": total_new, "errors": errors}
 
 

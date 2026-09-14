@@ -5,7 +5,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.database import Base, SessionLocal, engine
+from app.database import Base, SessionLocal, apply_mysql_table_options, engine
 from app.models import Category, Role, Setting, User
 from app.services.ingest import seed_sources
 from app.utils.security import hash_password
@@ -142,6 +142,8 @@ def ensure_settings(db: Session) -> None:
 
 
 def run() -> None:
+    # Models are all imported by now, so every table is in the metadata.
+    apply_mysql_table_options()
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
         ensure_categories(db)
