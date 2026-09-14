@@ -111,12 +111,66 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          # Strip CR so a key pasted from Windows or a wrapped terminal still
+          # parses, and guarantee the trailing newline OpenSSH requires.
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+
+          # A malformed key fails later as "error in libcrypto" followed by a
+          # password prompt, which reads like a server-side permission problem
+          # and is not. Diagnose it here instead. None of what is printed is
+          # secret: the BEGIN/END markers are fixed strings and the counts
+          # reveal nothing about the key material.
+          if ! ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null 2>&1; then
+            echo "::error::CPANEL_SSH_KEY is not a valid OpenSSH private key."
+            lines=$(wc -l < ~/.ssh/deploy_key)
+            first=$(head -1 ~/.ssh/deploy_key)
+            last=$(tail -1 ~/.ssh/deploy_key)
+            echo ""
+            echo "What arrived in the secret:"
+            echo "  lines      : $lines"
+            echo "  first line : $first"
+            echo "  last line  : $last"
+            echo ""
+            case "$first" in
+              *"PUBLIC KEY"*|ssh-*)
+                echo "  Diagnosis: this is the PUBLIC key."
+                echo "  Fix: the secret needs the private half - the file with NO .pub extension."
+                ;;
+              *BEGIN*)
+                if [ "$lines" -lt 3 ]; then
+                  echo "  Diagnosis: the line breaks were lost - the whole key is on one line."
+                  echo "  Fix: copy it as a file rather than selecting terminal text:"
+                  echo "         pbcopy < ~/.ssh/cpanel_deploy     # macOS"
+                  echo "         xclip -sel clip < ~/.ssh/cpanel_deploy   # Linux"
+                  echo "       then paste into the secret and save."
+                else
+                  echo "  Diagnosis: begins correctly but will not parse."
+                  echo "  Fix: check for leading spaces on each line, a missing END line,"
+                  echo "       or a passphrase on the key (deploy keys must have none)."
+                fi
+                ;;
+              *)
+                echo "  Diagnosis: does not start with a BEGIN line - the secret looks empty or truncated."
+                echo "  Fix: re-paste the entire file, including the BEGIN and END lines."
+                ;;
+            esac
+            echo ""
+            echo "Regenerate a passphrase-less key if in doubt:"
+            echo "  ssh-keygen -t ed25519 -f ~/.ssh/cpanel_deploy -N \"\""
+            exit 1
+          fi
+          echo "Private key parsed successfully."
+
           # Pin the host key so the deploy fails loudly rather than trusting
           # whatever answers on first connect.
           ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           chmod 600 ~/.ssh/known_hosts
+          if [ ! -s ~/.ssh/known_hosts ]; then
+            echo "::error::Could not reach $SSH_HOST on port $SSH_PORT to read its host key."
+            echo "Check CPANEL_HOST and CPANEL_SSH_PORT (Namecheap uses 21098, Hostinger 65002)."
+            exit 1
+          fi
 
       - name: Upload the front end
         env:
