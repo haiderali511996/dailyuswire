@@ -24,6 +24,17 @@ jobs:
       # to the Secrets tab, so the deploy works whichever tab they were entered
       # on. Variables are preferable: GitHub masks secrets in logs, which turns
       # URLs into *** and makes failures harder to read.
+      - name: Identify this workflow revision
+        run: |
+          echo "workflow-marker: DIRECT-INTERPRETER-V2"
+          echo "commit         : ${{ github.sha }}"
+          echo "ref            : ${{ github.ref }}"
+          echo "triggered by   : ${{ github.event_name }}"
+          echo ""
+          echo "If the marker above is missing from a run's log, that run used an"
+          echo "older copy of this workflow - re-running a previous failed run"
+          echo "replays that run's commit, not the current branch."
+
       - name: Check required configuration
         env:
           SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
