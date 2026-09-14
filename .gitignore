@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment - never commit real secrets
+.env
+.env.local
+.env*.local
+!.env.example
+
+# Build output
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Database & uploads (runtime state, not source)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite3
+backend/media/
+!backend/media/.gitkeep
+
+# Self-hosted editor assets, restored by `npm install` postinstall
+frontend/public/tinymce/
+
+# Local tooling
+.DS_Store
+*.log
+.vercel
+.idea/
+.vscode/
+coverage/
+.pytest_cache/
