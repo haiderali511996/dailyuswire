@@ -4,6 +4,7 @@ import { Playfair_Display, Source_Sans_3 } from 'next/font/google';
 import { Analytics } from '@/components/site/Analytics';
 import { JsonLd } from '@/components/site/JsonLd';
 import {
+  API_URL,
   GSC_VERIFICATION,
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -126,7 +127,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-US" className={`${display.variable} ${body.variable}`}>
       <head>
-        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'} />
+        <link rel="preconnect" href={API_URL} />
         <JsonLd data={SITE_SCHEMA} />
       </head>
       <body className="flex min-h-screen flex-col">
