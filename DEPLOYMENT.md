@@ -45,6 +45,22 @@ cPanel → **Domains** → *Create A Domain*
 - Domain: `api.yourdomain.com`
 - Document root: leave whatever cPanel suggests.
 
+### Know your document roots before you go further
+
+`public_html` belongs to the account's **main** domain. If your site is an addon
+domain — common when one cPanel account hosts several sites — it has its own
+document root somewhere else entirely, and checking `public_html` will mislead
+you. Ask cPanel rather than assuming:
+
+```bash
+uapi --output=jsonpretty DomainInfo single_domain_data domain=yourdomain.com \
+  | grep -E '"(documentroot|type)"'
+```
+
+An addon domain typically returns `/home/USER/yourdomain.com`. That directory is
+where cPanel writes the `.htaccess` that routes requests into Passenger, so it is
+the one to check when a domain shows a directory listing instead of your site.
+
 Then cPanel → **SSL/TLS Status**, tick both `yourdomain.com` and `api.yourdomain.com`
 and click *Run AutoSSL*. Wait for both to show a valid certificate before continuing —
 the site calls the API over HTTPS, and a browser will block it otherwise.
@@ -302,6 +318,19 @@ proxy target is frozen into the build, so `NEXT_PUBLIC_API_URL` must have been
 correct **in GitHub Actions**, not just on the server. If you changed that
 variable, re-run the deploy; editing it in cPanel alone will not help. A build
 that would hit this now fails on purpose with a message naming both URLs.
+
+**The domain shows "Index of /" instead of the site**
+No Passenger application is bound to that domain, so Apache is serving an empty
+document root. List what is actually registered:
+
+```bash
+uapi --output=jsonpretty PassengerApps list_applications
+```
+
+Empty `data` means no apps exist at all — create them in Setup Python App and
+Setup Node.js App. Destroying an app to change its Python version deregisters it
+and leaves the virtualenv behind, so a leftover `virtualenv` directory is not
+evidence the app still exists.
 
 **The build succeeds but the site does not change**
 Passenger caches workers. Restart both apps from their cPanel pages, or push an
