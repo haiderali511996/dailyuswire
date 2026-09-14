@@ -148,9 +148,18 @@ GitHub → your repo → **Settings** → **Secrets and variables** → **Action
 | `NEXT_PUBLIC_GA_ID` | your GA4 ID, or leave empty |
 | `NEXT_PUBLIC_GSC_VERIFICATION` | your Search Console code, or leave empty |
 
-> These are **variables**, not secrets, because they are compiled into the public
-> JavaScript bundle and are visible to anyone who views the site. Nothing secret
-> belongs here. Secrets stay in the Secrets tab, where GitHub masks them in logs.
+> **Either tab works.** The workflow reads each of these from Variables first and
+> falls back to Secrets, so if you already entered them as secrets the deploy
+> still runs — no need to re-enter anything.
+>
+> Variables are the better home for them, for two reasons. These values are
+> compiled into the public JavaScript bundle and are visible to anyone who views
+> the site, so treating them as secrets protects nothing. And GitHub masks secret
+> values in workflow logs, which turns your URLs into `***` and makes a failed
+> deploy noticeably harder to read.
+>
+> The six entries in the Secrets table above are genuinely sensitive and belong
+> in Secrets.
 
 ---
 
