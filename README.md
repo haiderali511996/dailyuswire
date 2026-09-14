@@ -132,7 +132,7 @@ openly for syndication, and always keep the source link.
 | Variable | Where | Purpose |
 |---|---|---|
 | `SECRET_KEY` | backend | JWT signing. Must be long and random. |
-| `DATABASE_URL` | backend | Postgres in production; SQLite is dev-only. |
+| `DATABASE_URL` | backend | MySQL or Postgres in production; SQLite is dev-only. |
 | `ADMIN_PASSWORD` | backend | Change it from the default before first boot. |
 | `SITE_URL` | both | Public URL; drives canonicals, sitemaps and JSON-LD. |
 | `REVALIDATE_SECRET` | both | Must match on both sides or ISR will not refresh. |
@@ -193,3 +193,13 @@ frontend/
 
 Your project — use it as you like. TinyMCE is bundled under its GPL licence
 (`licenseKey: 'gpl'`); if you need the commercial terms, get a key from Tiny.
+
+---
+
+## Deploying
+
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for step-by-step cPanel setup with
+automatic GitHub deployments on every push to `main`.
+
+Supported databases: MySQL/MariaDB (`mysql://…`), PostgreSQL (`postgresql://…`)
+and SQLite (development default).

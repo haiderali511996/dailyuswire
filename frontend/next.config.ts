@@ -1,6 +1,37 @@
 import type { NextConfig } from 'next';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
+/**
+ * Upstream for the /media proxy below.
+ *
+ * IMPORTANT: with `output: 'standalone'`, rewrite destinations are frozen into
+ * routes-manifest.json at BUILD time - they are not re-read from the
+ * environment when the server boots. So this value must be correct in the
+ * build environment (CI), not just on the server, or every uploaded image
+ * 404s in production with no error in the logs.
+ */
+const mediaUpstream = (
+  process.env.API_INTERNAL_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  'http://localhost:8000'
+).replace(/\/$/, '');
+
+const isLocal = (url: string) => /localhost|127\.0\.0\.1|0\.0\.0\.0/.test(url);
+
+// A build aimed at a real domain but pointing media at localhost is always a
+// misconfiguration, and it fails silently in production - every uploaded image
+// 404s with nothing in the logs. Catch it here instead. A fully local build
+// (both URLs on localhost) is left alone.
+if (isLocal(mediaUpstream) && !isLocal(siteUrl)) {
+  throw new Error(
+    `next.config: media upstream resolved to "${mediaUpstream}", but the site is ` +
+      `being built for "${siteUrl}".\n` +
+      'Rewrite destinations are frozen at build time in standalone output, so every\n' +
+      'uploaded image would 404. Set NEXT_PUBLIC_API_URL (and API_INTERNAL_URL) to\n' +
+      'your public API origin before building, e.g. https://api.yourdomain.com',
+  );
+}
 
 const nextConfig: NextConfig = {
   // Emits .next/standalone with a minimal server bundle - what the Dockerfile ships.
@@ -22,7 +53,7 @@ const nextConfig: NextConfig = {
       // Proxy uploads through the site's own domain: keeps images same-origin
       // (no CORS, no cross-origin image optimisation) and lets the CDN in front
       // of Next.js cache them.
-      { source: '/media/:path*', destination: `${apiUrl}/media/:path*` },
+      { source: '/media/:path*', destination: `${mediaUpstream}/media/:path*` },
     ];
   },
   async headers() {
