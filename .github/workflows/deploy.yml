@@ -19,10 +19,15 @@ jobs:
     steps:
       # Fail in seconds with a readable message rather than part-way through a
       # build. An unset GitHub variable arrives as an empty string, not as unset.
+      #
+      # Non-secret settings are read from the Variables tab first and fall back
+      # to the Secrets tab, so the deploy works whichever tab they were entered
+      # on. Variables are preferable: GitHub masks secrets in logs, which turns
+      # URLs into *** and makes failures harder to read.
       - name: Check required configuration
         env:
-          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
-          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
           HOST: ${{ secrets.CPANEL_HOST }}
           USER_NAME: ${{ secrets.CPANEL_USER }}
           KEY: ${{ secrets.CPANEL_SSH_KEY }}
@@ -73,14 +78,14 @@ jobs:
         env:
           # NEXT_PUBLIC_* values are inlined at build time, so they must be
           # present here - setting them on the server afterwards has no effect.
-          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
           # Rewrite destinations are frozen into routes-manifest.json during the
           # build, so the /media proxy target has to be right here too.
-          API_INTERNAL_URL: ${{ vars.API_INTERNAL_URL || vars.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_ADSENSE_CLIENT: ${{ vars.NEXT_PUBLIC_ADSENSE_CLIENT }}
-          NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID }}
-          NEXT_PUBLIC_GSC_VERIFICATION: ${{ vars.NEXT_PUBLIC_GSC_VERIFICATION }}
+          API_INTERNAL_URL: ${{ vars.API_INTERNAL_URL || secrets.API_INTERNAL_URL || vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_ADSENSE_CLIENT: ${{ vars.NEXT_PUBLIC_ADSENSE_CLIENT || secrets.NEXT_PUBLIC_ADSENSE_CLIENT }}
+          NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID || secrets.NEXT_PUBLIC_GA_ID }}
+          NEXT_PUBLIC_GSC_VERIFICATION: ${{ vars.NEXT_PUBLIC_GSC_VERIFICATION || secrets.NEXT_PUBLIC_GSC_VERIFICATION }}
           NEXT_TELEMETRY_DISABLED: '1'
         run: npm run build
 
@@ -102,7 +107,7 @@ jobs:
         env:
           SSH_KEY: ${{ secrets.CPANEL_SSH_KEY }}
           SSH_HOST: ${{ secrets.CPANEL_HOST }}
-          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || '22' }}
+          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || secrets.CPANEL_SSH_PORT || '22' }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
@@ -115,7 +120,7 @@ jobs:
 
       - name: Upload the front end
         env:
-          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || '22' }}
+          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || secrets.CPANEL_SSH_PORT || '22' }}
           TARGET: ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_WEB_PATH }}/
         run: |
           set -euo pipefail
@@ -127,7 +132,7 @@ jobs:
 
       - name: Upload the backend
         env:
-          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || '22' }}
+          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || secrets.CPANEL_SSH_PORT || '22' }}
           TARGET: ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_API_PATH }}/
         run: |
           set -euo pipefail
@@ -148,7 +153,7 @@ jobs:
 
       - name: Install dependencies and restart both apps
         env:
-          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || '22' }}
+          SSH_PORT: ${{ vars.CPANEL_SSH_PORT || secrets.CPANEL_SSH_PORT || '22' }}
           SSH_TARGET: ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}
           API_PATH: ${{ secrets.CPANEL_API_PATH }}
           WEB_PATH: ${{ secrets.CPANEL_WEB_PATH }}
@@ -180,8 +185,8 @@ jobs:
 
       - name: Verify the deployment
         env:
-          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
-          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
         run: |
           set -euo pipefail
           # Passenger starts workers lazily, so the first request may be slow.
