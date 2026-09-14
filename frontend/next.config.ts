@@ -1,6 +1,16 @@
 import type { NextConfig } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+/**
+ * Read an env var, treating "" as absent. GitHub Actions sets any `vars.X` that
+ * has not been created to an empty string rather than leaving it unset, and an
+ * empty string defeats `??`.
+ */
+function env(name: string, fallback: string): string {
+  const value = process.env[name];
+  return value && value.trim() !== '' ? value.trim() : fallback;
+}
+
+const siteUrl = env('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000');
 
 /**
  * Upstream for the /media proxy below.
@@ -11,11 +21,31 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
  * build environment (CI), not just on the server, or every uploaded image
  * 404s in production with no error in the logs.
  */
-const mediaUpstream = (
-  process.env.API_INTERNAL_URL ??
-  process.env.NEXT_PUBLIC_API_URL ??
-  'http://localhost:8000'
+const mediaUpstream = env(
+  'API_INTERNAL_URL',
+  env('NEXT_PUBLIC_API_URL', 'http://localhost:8000'),
 ).replace(/\/$/, '');
+
+// CI builds must be told where the site lives. Without this the defaults above
+// quietly produce a localhost build that appears to succeed and then 404s in
+// production, so say plainly which variable is missing.
+if (process.env.CI && !process.env.NEXT_PUBLIC_SITE_URL?.trim()) {
+  throw new Error(
+    'next.config: NEXT_PUBLIC_SITE_URL is not set.\n' +
+      'Add it in GitHub > Settings > Secrets and variables > Actions > Variables,\n' +
+      'e.g. NEXT_PUBLIC_SITE_URL = https://yourdomain.com\n' +
+      'See DEPLOYMENT.md Step 5.',
+  );
+}
+
+if (process.env.CI && !env('API_INTERNAL_URL', env('NEXT_PUBLIC_API_URL', ''))) {
+  throw new Error(
+    'next.config: NEXT_PUBLIC_API_URL is not set.\n' +
+      'Add it in GitHub > Settings > Secrets and variables > Actions > Variables,\n' +
+      'e.g. NEXT_PUBLIC_API_URL = https://api.yourdomain.com\n' +
+      'See DEPLOYMENT.md Step 5.',
+  );
+}
 
 const isLocal = (url: string) => /localhost|127\.0\.0\.1|0\.0\.0\.0/.test(url);
 

@@ -2,7 +2,7 @@
  * Server-side data access. Every call is cached with a tag so the backend's
  * revalidate webhook can invalidate exactly the pages that changed (ISR).
  */
-import { API_INTERNAL } from './config';
+import { API_INTERNAL, API_URL } from './config';
 import type { Category, Paginated, Post, PostCard, Tag } from './types';
 
 const REVALIDATE_SECONDS = 60;
@@ -110,7 +110,7 @@ export async function getSitemapData(): Promise<SitemapData | null> {
 
 /** Fire-and-forget view counter, called from a client component. */
 export function registerView(slug: string): void {
-  fetch(`${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/posts/${encodeURIComponent(slug)}/view`, {
+  fetch(`${API_URL}/api/posts/${encodeURIComponent(slug)}/view`, {
     method: 'POST',
     keepalive: true,
   }).catch(() => {});

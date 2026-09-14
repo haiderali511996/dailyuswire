@@ -17,6 +17,40 @@ jobs:
     timeout-minutes: 25
 
     steps:
+      # Fail in seconds with a readable message rather than part-way through a
+      # build. An unset GitHub variable arrives as an empty string, not as unset.
+      - name: Check required configuration
+        env:
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          HOST: ${{ secrets.CPANEL_HOST }}
+          USER_NAME: ${{ secrets.CPANEL_USER }}
+          KEY: ${{ secrets.CPANEL_SSH_KEY }}
+          API_PATH: ${{ secrets.CPANEL_API_PATH }}
+          WEB_PATH: ${{ secrets.CPANEL_WEB_PATH }}
+          PY_ACTIVATE: ${{ secrets.CPANEL_PY_ACTIVATE }}
+        run: |
+          set -uo pipefail
+          missing=()
+          [ -n "${SITE_URL// }" ]    || missing+=("variable NEXT_PUBLIC_SITE_URL   e.g. https://yourdomain.com")
+          [ -n "${API_URL// }" ]     || missing+=("variable NEXT_PUBLIC_API_URL    e.g. https://api.yourdomain.com")
+          [ -n "${HOST// }" ]        || missing+=("secret   CPANEL_HOST            your server hostname")
+          [ -n "${USER_NAME// }" ]   || missing+=("secret   CPANEL_USER            your cPanel username")
+          [ -n "${KEY// }" ]         || missing+=("secret   CPANEL_SSH_KEY         the private deploy key")
+          [ -n "${API_PATH// }" ]    || missing+=("secret   CPANEL_API_PATH        /home/USER/apps/api")
+          [ -n "${WEB_PATH// }" ]    || missing+=("secret   CPANEL_WEB_PATH        /home/USER/apps/web")
+          [ -n "${PY_ACTIVATE// }" ] || missing+=("secret   CPANEL_PY_ACTIVATE     path to the venv activate script")
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::${#missing[@]} required setting(s) are missing. See DEPLOYMENT.md Step 5."
+            printf '\nNot set:\n'
+            printf '  %s\n' "${missing[@]}"
+            printf '\nAdd them under GitHub > Settings > Secrets and variables > Actions.\n'
+            printf 'Variables go on the Variables tab, secrets on the Secrets tab.\n'
+            exit 1
+          fi
+          echo "All required secrets and variables are present."
+
       - name: Check out the repository
         uses: actions/checkout@v4
 
