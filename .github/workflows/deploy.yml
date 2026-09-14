@@ -268,14 +268,27 @@ jobs:
             find "$HOME/virtualenv" -name activate -path '*/bin/*' 2>/dev/null | sed 's/^/  /'
             exit 1
           fi
-          # shellcheck disable=SC1090
-          source "$PY_ACTIVATE"
+
+          # Call the interpreter by absolute path rather than sourcing activate.
+          # Sourcing is unreliable in a jailed, non-interactive cPanel shell -
+          # it can fail with "Permission denied" on a perfectly readable file -
+          # and all activate really does is put this directory on PATH.
+          VENV_BIN=$(dirname "$PY_ACTIVATE")
+          if   [ -x "$VENV_BIN/python" ];   then PY="$VENV_BIN/python"
+          elif [ -x "$VENV_BIN/python3" ];  then PY="$VENV_BIN/python3"
+          else
+            echo "ERROR: no python executable in $VENV_BIN"
+            ls -la "$VENV_BIN" | sed 's/^/  /'
+            exit 1
+          fi
+          export PATH="$VENV_BIN:$PATH"
+          export VIRTUAL_ENV="${VENV_BIN%/bin}"
 
           # cPanel's Python-app dropdown still offers versions this stack cannot
           # run. Check before pip spends minutes failing to resolve wheels.
-          PYV=$(python -c 'import sys; print("%d.%d" % sys.version_info[:2])')
-          PYOK=$(python -c 'import sys; print(1 if sys.version_info[:2] >= (3, 11) else 0)')
-          echo "    python $PYV at $(command -v python)"
+          PYV=$("$PY" -c 'import sys; print("%d.%d" % sys.version_info[:2])')
+          PYOK=$("$PY" -c 'import sys; print(1 if sys.version_info[:2] >= (3, 11) else 0)')
+          echo "    python $PYV at $PY"
           if [ "$PYOK" != "1" ]; then
             echo ""
             echo "ERROR: this app requires Python 3.11 or newer, found $PYV."
@@ -291,8 +304,8 @@ jobs:
 
           echo "==> Python dependencies"
           cd "$API_PATH"
-          pip install --quiet --upgrade pip
-          pip install --quiet -r requirements.txt
+          "$PY" -m pip install --quiet --upgrade pip
+          "$PY" -m pip install --quiet -r requirements.txt
           mkdir -p media tmp
 
           echo "==> Restarting the Python app"
