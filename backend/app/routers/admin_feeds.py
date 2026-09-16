@@ -72,7 +72,14 @@ def list_items(
     if only_pending:
         query = query.filter(FeedItem.imported_post_id.is_(None))
     return (
-        query.order_by(FeedItem.published_at.desc().nullslast(), FeedItem.fetched_at.desc())
+        # `nullslast()` compiles to "NULLS LAST", which MySQL and MariaDB reject
+        # outright. Ordering on the null test first is portable: False (0) sorts
+        # before True (1), so rows with a date come first.
+        query.order_by(
+            FeedItem.published_at.is_(None),
+            FeedItem.published_at.desc(),
+            FeedItem.fetched_at.desc(),
+        )
         .offset((page - 1) * per_page)
         .limit(per_page)
         .all()
