@@ -121,7 +121,20 @@ It looks like:
 source /home/youruser/virtualenv/apps/api/3.11/bin/activate && cd /home/youruser/apps/api
 ```
 
-You need the path up to `activate` in Step 5. Save it.
+Take only the **path ending in `activate`** — not the whole command. Pasting
+`source ... && cd ...` into the secret used to break the deploy in a way that
+looked like a permissions error; the workflow now strips the extra parts
+automatically, but the bare path is what belongs there:
+
+```
+/home/youruser/virtualenv/apps/api/3.12/bin/activate
+```
+
+Find it any time with:
+
+```bash
+find ~/virtualenv -name activate -path '*/bin/*'
+```
 
 ---
 
@@ -165,7 +178,7 @@ GitHub → your repo → **Settings** → **Secrets and variables** → **Action
 | `CPANEL_SSH_KEY` | the **private** key from Step 6 (whole file, including the BEGIN/END lines) |
 | `CPANEL_API_PATH` | `/home/youruser/apps/api` |
 | `CPANEL_WEB_PATH` | `/home/youruser/apps/web` |
-| `CPANEL_PY_ACTIVATE` | `/home/youruser/virtualenv/apps/api/3.11/bin/activate` (from Step 3) |
+| `CPANEL_PY_ACTIVATE` | `/home/youruser/virtualenv/apps/api/3.12/bin/activate` — the **path only** |
 
 ### Variables tab → *New repository variable*
 

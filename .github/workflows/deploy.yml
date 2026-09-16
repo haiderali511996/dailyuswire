@@ -268,8 +268,38 @@ jobs:
           PY_ACTIVATE: ${{ secrets.CPANEL_PY_ACTIVATE }}
         run: |
           set -euo pipefail
+
+          # cPanel shows the venv as a full command:
+          #   source /home/u/virtualenv/apps/api/3.12/bin/activate && cd /home/u/apps/api
+          # Accept that verbatim and reduce it to the path, rather than failing
+          # obscurely on a value that looks right to whoever pasted it.
+          # Trim first: a leading space would otherwise defeat the prefix strips.
+          PY_ACTIVATE="$(echo "$PY_ACTIVATE" | xargs)"
+          PY_ACTIVATE="${PY_ACTIVATE%%&&*}"          # drop any "&& cd ..." tail
+          PY_ACTIVATE="${PY_ACTIVATE#source }"       # drop a leading "source "
+          PY_ACTIVATE="${PY_ACTIVATE#. }"            # or a leading ". "
+          PY_ACTIVATE="$(echo "$PY_ACTIVATE" | xargs)"   # trim again
+
+          case "$PY_ACTIVATE" in
+            /*/bin/activate) : ;;
+            *)
+              echo "::error::CPANEL_PY_ACTIVATE does not look like a path to a venv activate script."
+              echo "Expected something like:"
+              echo "  /home/USER/virtualenv/apps/api/3.12/bin/activate"
+              echo "Find it with:  find ~/virtualenv -name activate -path '*/bin/*'"
+              exit 1
+              ;;
+          esac
+          echo "Using virtualenv: $PY_ACTIVATE"
+
+          # printf %q quotes each value for the REMOTE shell, which re-parses the
+          # command string. Without it a value containing spaces is split, and
+          # the rest of the line is run as a command.
+          REMOTE_ENV=$(printf 'API_PATH=%q WEB_PATH=%q PY_ACTIVATE=%q' \
+            "$API_PATH" "$WEB_PATH" "$PY_ACTIVATE")
+
           ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o StrictHostKeyChecking=yes -o BatchMode=yes "$SSH_TARGET" \
-            API_PATH="$API_PATH" WEB_PATH="$WEB_PATH" PY_ACTIVATE="$PY_ACTIVATE" 'bash -s' <<'REMOTE'
+            "$REMOTE_ENV bash -s" <<'REMOTE'
           set -euo pipefail
 
           echo "==> Python environment"
