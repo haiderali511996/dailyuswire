@@ -100,6 +100,37 @@ jobs:
           NEXT_TELEMETRY_DISABLED: '1'
         run: npm run build
 
+      # The build inlines NEXT_PUBLIC_* into the bundle. If they were empty the
+      # fallbacks get compiled in and the deployed site silently calls
+      # localhost, which looks like a server problem and is not. Refuse to ship
+      # such a build.
+      - name: Verify the build has the right URLs compiled in
+        working-directory: frontend
+        env:
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
+        run: |
+          set -uo pipefail
+          if echo "$SITE_URL" | grep -qE 'localhost|127\.0\.0\.1'; then
+            echo "Site URL is local; skipping check."
+            exit 0
+          fi
+
+          hits=$(grep -rl "localhost:8000\|localhost:3000" .next/standalone .next/static .next/server 2>/dev/null | head -5)
+          if [ -n "$hits" ]; then
+            echo "::error::The build compiled in localhost URLs. NEXT_PUBLIC_SITE_URL and NEXT_PUBLIC_API_URL were not visible to the build step."
+            echo ""
+            echo "Files containing a localhost URL:"
+            echo "$hits" | sed 's/^/  /'
+            echo ""
+            echo "These are read at BUILD time, so they must exist in GitHub, not only on the server."
+            echo "Check Settings > Secrets and variables > Actions that these names exist exactly:"
+            echo "  NEXT_PUBLIC_SITE_URL   e.g. https://yourdomain.com"
+            echo "  NEXT_PUBLIC_API_URL    e.g. https://api.yourdomain.com"
+            echo "Either tab works; the names must match exactly, with no trailing spaces."
+            exit 1
+          fi
+          echo "No localhost URLs in the build."
+
       - name: Assemble the deployable front end
         run: |
           set -euo pipefail
