@@ -104,10 +104,15 @@ jobs:
       # fallbacks get compiled in and the deployed site silently calls
       # localhost, which looks like a server problem and is not. Refuse to ship
       # such a build.
+      # NEXT_PUBLIC_* values are inlined into the client bundle during the
+      # build. If they were not visible to the build step the fallbacks get
+      # compiled in and the live site calls localhost from the browser, which
+      # presents as a server fault and is not. Catch that before uploading.
       - name: Verify the build has the right URLs compiled in
         working-directory: frontend
         env:
           SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
         run: |
           set -uo pipefail
           if echo "$SITE_URL" | grep -qE 'localhost|127\.0\.0\.1'; then
@@ -115,21 +120,28 @@ jobs:
             exit 0
           fi
 
-          hits=$(grep -rl "localhost:8000\|localhost:3000" .next/standalone .next/static .next/server 2>/dev/null | head -5)
-          if [ -n "$hits" ]; then
-            echo "::error::The build compiled in localhost URLs. NEXT_PUBLIC_SITE_URL and NEXT_PUBLIC_API_URL were not visible to the build step."
-            echo ""
-            echo "Files containing a localhost URL:"
-            echo "$hits" | sed 's/^/  /'
-            echo ""
-            echo "These are read at BUILD time, so they must exist in GitHub, not only on the server."
-            echo "Check Settings > Secrets and variables > Actions that these names exist exactly:"
-            echo "  NEXT_PUBLIC_SITE_URL   e.g. https://yourdomain.com"
-            echo "  NEXT_PUBLIC_API_URL    e.g. https://api.yourdomain.com"
-            echo "Either tab works; the names must match exactly, with no trailing spaces."
+          # Assert the real host IS present, rather than that localhost is
+          # absent: the localhost strings are the fallback literals and sit
+          # beside the inlined value in every build, so their presence proves
+          # nothing either way.
+          API_HOST=$(echo "$API_URL" | sed -E 's#^https?://##; s#/.*##')
+          if [ -z "$API_HOST" ]; then
+            echo "::error::NEXT_PUBLIC_API_URL is empty."
             exit 1
           fi
-          echo "No localhost URLs in the build."
+
+          if ! grep -rq "$API_HOST" .next/static 2>/dev/null; then
+            echo "::error::The client bundle does not reference $API_HOST, so browsers will fall back to localhost."
+            echo ""
+            echo "NEXT_PUBLIC_* values are inlined at BUILD time - setting them on the"
+            echo "server has no effect on what the browser calls."
+            echo "Check Settings > Secrets and variables > Actions for these exact names:"
+            echo "  NEXT_PUBLIC_SITE_URL   e.g. https://yourdomain.com"
+            echo "  NEXT_PUBLIC_API_URL    e.g. https://api.yourdomain.com"
+            echo "Either tab works; names must match exactly, with no trailing spaces."
+            exit 1
+          fi
+          echo "Client bundle references $API_HOST."
 
       - name: Assemble the deployable front end
         run: |
