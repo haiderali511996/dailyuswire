@@ -332,6 +332,22 @@ correct **in GitHub Actions**, not just on the server. If you changed that
 variable, re-run the deploy; editing it in cPanel alone will not help. A build
 that would hit this now fails on purpose with a message naming both URLs.
 
+**The admin password does not work**
+`ADMIN_PASSWORD` is only applied when the admin account is first created —
+bootstrap leaves an existing account untouched, so editing that variable later
+changes nothing. Reset it directly:
+
+```bash
+cd ~/apps/api
+export DATABASE_URL='mysql://user:pass@localhost/dbname'
+python reset_admin.py --list
+python reset_admin.py --email you@example.com --password 'NewPassword123'
+```
+
+The export is required because cPanel's environment variables reach the
+Passenger process, not your SSH shell. Add `--create` to make the account if the
+email does not exist yet.
+
 **The domain shows "Index of /" instead of the site**
 No Passenger application is bound to that domain, so Apache is serving an empty
 document root. List what is actually registered:
