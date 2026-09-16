@@ -251,6 +251,7 @@ jobs:
             --exclude 'media/' \
             --exclude 'tmp/' \
             --exclude '.venv/' \
+            --exclude 'passenger_wsgi.py' \
             --exclude '__pycache__/' \
             --exclude '*.pyc' \
             --exclude '*.db' \
