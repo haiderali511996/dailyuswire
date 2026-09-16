@@ -108,6 +108,12 @@ This is deliberate, and it is not optional if you want AdSense:
 reporting, analysis or context, delete the banner, then publish. That is what makes the page
 original — and what makes the site monetisable.
 
+**Images are never imported.** News photos are licensed separately from the article text,
+usually from an agency such as AP, Reuters or Getty, and republishing one without a licence is
+the likeliest way to attract a copyright claim. The draft records the source article's image as
+a link for reference only; supply your own photo, a licensed stock image, or a public-domain
+government one.
+
 Add or remove feeds under **News Wire → Manage sources**. Only add feeds a publisher offers
 openly for syndication, and always keep the source link.
 

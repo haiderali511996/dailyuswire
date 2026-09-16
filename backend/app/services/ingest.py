@@ -63,6 +63,10 @@ REWRITE_NOTICE = (
     "source headline, the publisher's own syndicated summary and a link back. Replace "
     "the body with your own original reporting or analysis, then delete this box. "
     "Publishing copied text breaks copyright and Google AdSense policy."
+    "<br><br><strong>No cover image was imported.</strong> News photos are licensed "
+    "separately from the article, usually from an agency, and republishing one without "
+    "a licence is the single most likely way to attract a copyright claim. Add your own "
+    "image, a stock photo you have licensed, or a public-domain government image."
     "</div>"
 )
 
@@ -233,14 +237,25 @@ def import_item_as_draft(
         f'<p>Source: <a href="{item.link}" target="_blank" rel="noopener noreferrer nofollow">'
         f"{source_name or item.link}</a></p>"
     )
+    if item.image:
+        # Recorded for reference only, as a link the editor can open. It is
+        # deliberately NOT set as the cover image: an agency photo republished
+        # without a licence is the likeliest source of a copyright claim.
+        body += (
+            '<p class="editor-notice"><em>The source article used '
+            f'<a href="{item.image}" target="_blank" rel="noopener noreferrer nofollow">this image</a>. '
+            "Do not republish it unless you hold a licence - use it only to judge what "
+            "kind of picture the story needs.</em></p>"
+        )
 
     post = Post(
         title=item.title[:300],
         slug=unique_slug(db, Post, item.title),
         excerpt=make_excerpt(item.summary),
         content=sanitize_html(body),
-        cover_image=item.image or "",
-        cover_alt=item.title[:300],
+        # Intentionally blank: see the note added to the body above.
+        cover_image="",
+        cover_alt="",
         category_id=category.id if category else None,
         author_id=author.id,
         status=PostStatus.draft,
