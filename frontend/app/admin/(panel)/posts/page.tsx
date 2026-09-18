@@ -137,8 +137,8 @@ function PostsList() {
       {!loading && data && data.items.length === 0 && (
         <div className="card p-10 text-center">
           <p className="text-sm text-ink-muted">No articles match these filters.</p>
-          <Link href="/admin/wire" className="btn-primary btn-sm mt-4">
-            Pull headlines from the wire
+          <Link href="/admin/posts/new" className="btn-primary btn-sm mt-4">
+            Write a new article
           </Link>
         </div>
       )}

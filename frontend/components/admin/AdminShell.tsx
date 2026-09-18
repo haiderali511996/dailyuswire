@@ -9,7 +9,6 @@ import { useAuth } from '@/lib/auth-context';
 const NAV: { href: string; label: string; icon: string; adminOnly?: boolean }[] = [
   { href: '/admin', label: 'Dashboard', icon: 'M3 12l9-9 9 9M5 10v10h14V10' },
   { href: '/admin/posts', label: 'Articles', icon: 'M4 4h16v16H4zM8 9h8M8 13h8M8 17h5' },
-  { href: '/admin/wire', label: 'News Wire', icon: 'M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M6 18h.01' },
   { href: '/admin/media', label: 'Media', icon: 'M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4' },
   { href: '/admin/categories', label: 'Categories', icon: 'M4 6h16M4 12h16M4 18h10' },
   { href: '/admin/users', label: 'Team', icon: 'M16 19v-2a4 4 0 0 0-8 0v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },

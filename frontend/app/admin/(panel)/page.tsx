@@ -40,18 +40,6 @@ export default function DashboardPage() {
         <Stat label="Total views" value={stats.total_views} format tone="flag" />
       </div>
 
-      {stats.pending_feed_items > 0 && (
-        <div className="flex flex-col gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-amber-900">
-            <strong>{stats.pending_feed_items}</strong> wire headlines are waiting to be turned into
-            drafts.
-          </p>
-          <Link href="/admin/wire" className="btn-primary btn-sm shrink-0">
-            Open the wire
-          </Link>
-        </div>
-      )}
-
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card p-5">
           <h2 className="font-serif text-lg font-bold text-navy-900">Articles by section</h2>
@@ -100,10 +88,9 @@ export default function DashboardPage() {
 
       <section className="card p-5">
         <h2 className="font-serif text-lg font-bold text-navy-900">Audience</h2>
-        <div className="mt-3 grid gap-4 sm:grid-cols-3">
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
           <Mini label="Total articles" value={stats.total_posts} />
           <Mini label="Newsletter subscribers" value={stats.subscribers} />
-          <Mini label="Wire items pending" value={stats.pending_feed_items} />
         </div>
       </section>
     </div>

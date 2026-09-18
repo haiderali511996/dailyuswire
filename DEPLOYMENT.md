@@ -7,7 +7,7 @@ Your account runs two cPanel apps:
 
 | App | cPanel tool | What it runs | Suggested URL |
 |---|---|---|---|
-| API | Setup **Python** App | FastAPI (admin, articles, wire) | `api.yourdomain.com` |
+| API | Setup **Python** App | FastAPI (admin, articles) | `api.yourdomain.com` |
 | Site | Setup **Node.js** App | Next.js (the public site) | `yourdomain.com` |
 
 Work through the steps in order. Steps 1–6 are one-time setup; after that every
@@ -313,8 +313,7 @@ one by hand from Actions → *Deploy to cPanel* → *Run workflow*.
 1. Visit `https://api.yourdomain.com/health` → `{"status":"ok","site":"Daily US Wire"}`
 2. Visit `https://yourdomain.com` → the site loads
 3. Sign in at `https://yourdomain.com/admin` with your `ADMIN_EMAIL` / `ADMIN_PASSWORD`
-4. Go to **News Wire** → **Pull latest** → headlines appear
-5. Upload an image in **Media** to confirm the `media` folder is writable
+4. Upload an image in **Media** to confirm the `media` folder is writable
 
 Then **change your admin password** under Team, and delete or rewrite the eight
 starter articles.
@@ -449,17 +448,4 @@ If a future change modifies a column, apply it to your live database yourself
 only matters after you have real content; the first deploy builds everything
 from scratch.
 
----
 
-## Keeping the wire fresh automatically
-
-cPanel → **Cron Jobs**, once an hour:
-
-```
-0 * * * * /usr/bin/curl -s -X POST "https://api.yourdomain.com/api/admin/feeds/fetch" -H "Authorization: Bearer YOUR_TOKEN" > /dev/null 2>&1
-```
-
-Get a token by signing in to `/admin` and copying `duw_token` from your browser's
-local storage. Tokens expire after 12 hours, so for a permanent job it is better
-to pull the wire manually from the admin panel — which is the sensible workflow
-anyway, since every item needs rewriting before it is published.

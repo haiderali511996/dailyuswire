@@ -151,8 +151,7 @@ function EmptyState() {
     <div className="shell flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
       <h1 className="font-serif text-3xl font-bold text-navy-900">No articles published yet</h1>
       <p className="mt-3 max-w-md text-ink-muted">
-        Sign in to the newsroom, pull the wire for today&apos;s headlines, and publish your first
-        story.
+        Sign in to the newsroom and publish your first story.
       </p>
       <Link href="/admin" className="btn-primary mt-6">
         Open the newsroom

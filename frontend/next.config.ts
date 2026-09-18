@@ -73,8 +73,10 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [360, 420, 640, 768, 1024, 1280, 1536],
     // Uploads are served same-origin via the /media rewrite below, so they need
-    // no remote pattern. This list only covers images that come from a
-    // publisher's own CDN via an imported wire item.
+    // no remote pattern. The wildcard is only here for articles whose cover or
+    // body images still point at an outside host - anything already published
+    // that way would 404 the moment this list is narrowed. Once every image is
+    // served from /media, replace this with the specific hosts you allow.
     remotePatterns: [{ protocol: 'https', hostname: '**' }],
   },
 
