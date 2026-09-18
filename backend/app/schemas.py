@@ -282,50 +282,6 @@ class MediaOut(ORMModel):
     created_at: UTCDateTime
 
 
-# ---------------- Feeds ----------------
-class FeedSourceIn(BaseModel):
-    name: str
-    url: str
-    homepage: str = ""
-    category_slug: str = "news"
-    is_active: bool = True
-
-
-class FeedSourceOut(ORMModel):
-    id: int
-    name: str
-    url: str
-    homepage: str = ""
-    category_slug: str = "news"
-    is_active: bool = True
-    last_fetched_at: UTCDateTime | None = None
-    last_status: str = ""
-
-
-class FeedItemOut(ORMModel):
-    id: int
-    title: str
-    summary: str = ""
-    link: str = ""
-    image: str = ""
-    author: str = ""
-    category_slug: str = "news"
-    published_at: UTCDateTime | None = None
-    imported_post_id: int | None = None
-    source: FeedSourceOut | None = None
-
-
-class IngestResult(BaseModel):
-    sources_checked: int
-    new_items: int
-    errors: list[str] = []
-
-
-class ImportRequest(BaseModel):
-    feed_item_ids: list[int]
-    category_id: int | None = None
-
-
 # ---------------- Misc ----------------
 class SubscribeIn(BaseModel):
     email: EmailStr
@@ -353,7 +309,6 @@ class DashboardStats(BaseModel):
     scheduled: int
     total_views: int
     subscribers: int
-    pending_feed_items: int
     per_category: list[dict]
     recent: list[PostCard]
 

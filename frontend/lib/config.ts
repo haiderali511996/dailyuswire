@@ -39,8 +39,8 @@ export const GSC_VERIFICATION = orElse(process.env.NEXT_PUBLIC_GSC_VERIFICATION,
  *
  * Uploads stay as same-origin `/media/...` paths - next.config.ts rewrites
  * them to the backend - so next/image optimises them locally and the CDN in
- * front of the site caches them. Absolute URLs (a publisher's CDN, from an
- * imported wire item) pass through untouched.
+ * front of the site caches them. Absolute URLs - an image hosted somewhere
+ * else - pass through untouched.
  */
 export function mediaUrl(url: string | null | undefined): string {
   if (!url) return '';

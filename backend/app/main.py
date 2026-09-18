@@ -8,7 +8,6 @@ from fastapi.staticfiles import StaticFiles
 from app import bootstrap
 from app.config import settings
 from app.routers import (
-    admin_feeds,
     admin_misc,
     admin_posts,
     auth,
@@ -25,7 +24,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=f"{settings.site_name} API",
-    description="Headless news CMS: posts, categories, media, SEO and the newsroom wire.",
+    description="Headless news CMS: posts, categories, media and SEO.",
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs",
@@ -48,7 +47,6 @@ for router in (
     public.router,
     admin_posts.router,
     admin_misc.router,
-    admin_feeds.router,
     feeds_public.router,
 ):
     app.include_router(router)

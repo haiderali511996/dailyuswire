@@ -10,7 +10,6 @@ from sqlalchemy import func
 from app.deps import AdminUser, CurrentUser, DbSession, EditorUser
 from app.models import (
     Category,
-    FeedItem,
     Media,
     Post,
     PostStatus,
@@ -62,10 +61,6 @@ def stats(db: DbSession, user: CurrentUser) -> DashboardStats:
         scheduled=counts.get(PostStatus.scheduled, 0),
         total_views=db.query(func.coalesce(func.sum(Post.views), 0)).scalar() or 0,
         subscribers=db.query(func.count(Subscriber.id)).scalar() or 0,
-        pending_feed_items=db.query(func.count(FeedItem.id))
-        .filter(FeedItem.imported_post_id.is_(None))
-        .scalar()
-        or 0,
         per_category=per_category,
         recent=[PostCard.model_validate(p) for p in recent],
     )

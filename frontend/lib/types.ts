@@ -108,30 +108,6 @@ export interface MediaItem {
   created_at: string;
 }
 
-export interface FeedSource {
-  id: number;
-  name: string;
-  url: string;
-  homepage: string;
-  category_slug: string;
-  is_active: boolean;
-  last_fetched_at: string | null;
-  last_status: string;
-}
-
-export interface FeedItem {
-  id: number;
-  title: string;
-  summary: string;
-  link: string;
-  image: string;
-  author: string;
-  category_slug: string;
-  published_at: string | null;
-  imported_post_id: number | null;
-  source: FeedSource | null;
-}
-
 export interface SeoCheck {
   ok: boolean;
   label: string;
@@ -153,7 +129,6 @@ export interface DashboardStats {
   scheduled: number;
   total_views: number;
   subscribers: number;
-  pending_feed_items: number;
   per_category: { name: string; slug: string; count: number }[];
   recent: PostCard[];
 }

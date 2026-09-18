@@ -1,4 +1,4 @@
-"""First-run setup: create tables, the admin user, the eight categories, feeds."""
+"""First-run setup: create tables, the admin user and the eight categories."""
 
 from __future__ import annotations
 
@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import Base, SessionLocal, apply_mysql_table_options, engine
 from app.models import Category, Role, Setting, User
-from app.services.ingest import seed_sources
 from app.utils.security import hash_password
 from app.utils.text import slugify
 
@@ -149,4 +148,3 @@ def run() -> None:
         ensure_categories(db)
         ensure_admin(db)
         ensure_settings(db)
-        seed_sources(db)

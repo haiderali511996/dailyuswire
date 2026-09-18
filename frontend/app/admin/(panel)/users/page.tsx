@@ -11,7 +11,7 @@ const BLANK = { name: '', email: '', password: '', role: 'author' as Role, bio: 
 
 const ROLE_HINTS: Record<Role, string> = {
   admin: 'Full access: team, settings, everything.',
-  editor: 'Publishes and edits any article, manages categories and the wire.',
+  editor: 'Publishes and edits any article, and manages categories.',
   author: 'Writes and publishes their own articles only.',
 };
 

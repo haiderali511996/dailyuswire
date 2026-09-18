@@ -5,8 +5,6 @@ import { API_URL } from './config';
 import type {
   Category,
   DashboardStats,
-  FeedItem,
-  FeedSource,
   MediaItem,
   Paginated,
   Post,
@@ -134,26 +132,6 @@ export const adminApi = {
     return request<MediaItem>('/api/admin/media', { method: 'POST', body: form });
   },
   deleteMedia: (id: number) => request<void>(`/api/admin/media/${id}`, { method: 'DELETE' }),
-
-  listSources: () => request<FeedSource[]>('/api/admin/feeds/sources'),
-  addSource: (body: unknown) =>
-    request<FeedSource>('/api/admin/feeds/sources', { method: 'POST', body: JSON.stringify(body) }),
-  deleteSource: (id: number) => request<void>(`/api/admin/feeds/sources/${id}`, { method: 'DELETE' }),
-  fetchWire: () =>
-    request<{ sources_checked: number; new_items: number; errors: string[] }>(
-      '/api/admin/feeds/fetch',
-      { method: 'POST' },
-    ),
-  listWireItems: (params: Record<string, string | number | boolean> = {}) => {
-    const qs = new URLSearchParams();
-    Object.entries(params).forEach(([k, v]) => qs.set(k, String(v)));
-    return request<FeedItem[]>(`/api/admin/feeds/items?${qs}`);
-  },
-  importWireItems: (feed_item_ids: number[], category_id?: number) =>
-    request<Post[]>('/api/admin/feeds/import', {
-      method: 'POST',
-      body: JSON.stringify({ feed_item_ids, category_id: category_id ?? null }),
-    }),
 
   getSettings: () => request<Record<string, string>>('/api/admin/settings'),
   putSettings: (entries: { key: string; value: string }[]) =>

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import enum
-import hashlib
 from datetime import datetime, timezone
 
 from sqlalchemy import (
@@ -14,7 +13,6 @@ from sqlalchemy import (
     String,
     Table,
     Text,
-    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -23,11 +21,6 @@ from app.database import Base
 
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
-
-
-def guid_digest(guid: str) -> str:
-    """Stable, index-safe fingerprint of a feed item GUID."""
-    return hashlib.sha256(guid.encode("utf-8")).hexdigest()
 
 
 class Role(str, enum.Enum):
@@ -175,48 +168,6 @@ class Media(Base):
     alt: Mapped[str] = mapped_column(String(300), default="")
     uploaded_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
-
-
-class FeedSource(Base):
-    """An RSS/Atom feed we are allowed to pull headlines from."""
-
-    __tablename__ = "feed_sources"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(200))
-    # 500 chars keeps the unique index inside MySQL's 3072-byte limit under
-    # utf8mb4 (4 bytes/char). Real feed URLs are far shorter.
-    url: Mapped[str] = mapped_column(String(500), unique=True)
-    homepage: Mapped[str] = mapped_column(String(400), default="")
-    category_slug: Mapped[str] = mapped_column(String(140), default="news")
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    last_fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    last_status: Mapped[str] = mapped_column(String(300), default="")
-
-
-class FeedItem(Base):
-    """A headline pulled from a feed. Never auto-published - it seeds a draft."""
-
-    __tablename__ = "feed_items"
-    __table_args__ = (UniqueConstraint("guid_hash", name="uq_feed_items_guid_hash"),)
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    source_id: Mapped[int] = mapped_column(ForeignKey("feed_sources.id", ondelete="CASCADE"), index=True)
-    # A feed GUID can be a long URL, and MySQL cannot index 800 utf8mb4 chars.
-    # Dedupe on a SHA-256 of the GUID instead; the raw value stays unindexed.
-    guid: Mapped[str] = mapped_column(String(800))
-    guid_hash: Mapped[str] = mapped_column(String(64), index=True)
-    title: Mapped[str] = mapped_column(String(500))
-    summary: Mapped[str] = mapped_column(Text, default="")
-    link: Mapped[str] = mapped_column(String(800), default="")
-    image: Mapped[str] = mapped_column(String(800), default="")
-    author: Mapped[str] = mapped_column(String(200), default="")
-    category_slug: Mapped[str] = mapped_column(String(140), default="news")
-    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
-    imported_post_id: Mapped[int | None] = mapped_column(ForeignKey("posts.id", ondelete="SET NULL"))
-
-    source: Mapped[FeedSource] = relationship()
 
 
 class Subscriber(Base):

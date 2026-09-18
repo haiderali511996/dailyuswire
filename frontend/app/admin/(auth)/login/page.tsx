@@ -40,7 +40,7 @@ export default function LoginPage() {
             <Image src="/logo.png" alt={SITE_NAME} width={220} height={51} priority className="mx-auto h-auto w-52" />
           </Link>
           <h1 className="mt-6 font-serif text-2xl font-bold text-navy-900">Sign in to the Newsroom</h1>
-          <p className="mt-1 text-sm text-ink-muted">Publish, edit and manage the wire.</p>
+          <p className="mt-1 text-sm text-ink-muted">Write, edit and publish your newsroom&apos;s articles.</p>
         </div>
 
         <form onSubmit={submit} className="card space-y-4 p-6">

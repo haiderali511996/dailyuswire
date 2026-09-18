@@ -18,12 +18,11 @@ Entertainment, Crypto, Business, Lifestyle and Marketing.
 - Legal pages AdSense requires: About, Contact, Privacy Policy, Terms, Disclaimer, Editorial Policy
 
 **Admin panel** (`/admin`)
-- Dashboard with per-section counts, view totals and pending wire items
+- Dashboard with per-section counts and view totals
 - Article editor with **TinyMCE** (self-hosted, no API key), category selection, tags, scheduling
 - **Live SEO panel**: score out of 100, Google SERP preview, and a Yoast-style checklist
 - 3–5 images per article with per-image alt text, caption and credit
 - Media library: drag-and-drop upload, auto-conversion to WebP, resize + thumbnail
-- **News Wire**: pulls headlines from 18 public RSS feeds and turns them into drafts
 - Categories, team management with roles, and site settings
 
 **SEO**
@@ -52,8 +51,8 @@ cp .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-First run creates the database, the eight categories, your admin account and the RSS
-source list. API docs: <http://localhost:8000/docs>
+First run creates the database, the eight categories and your admin account.
+API docs: <http://localhost:8000/docs>
 
 ### 2. Frontend
 
@@ -76,7 +75,7 @@ cd backend
 python seed_demo.py --covers ./covers    # 8 starter articles, one per section
 ```
 
-Then sign in to `/admin/wire`, click **Pull latest**, select headlines and **Import as drafts**.
+Then sign in to `/admin` and write your own.
 
 ---
 
@@ -88,28 +87,6 @@ docker compose up -d --build
 ```
 
 Brings up Postgres, the API and the front end together.
-
----
-
-## How the news wire works — read this before publishing
-
-The wire pulls **only what publishers put in their own syndication feeds**: headline, short
-summary, link and image. Importing an item creates a **draft** carrying a "rewrite required"
-banner and a credited link back to the source. **Nothing from a feed is ever auto-published.**
-
-This is deliberate, and it is not optional if you want AdSense:
-
-- Republishing another outlet's article text is copyright infringement.
-- "Scraped content" and "copied content" are explicit **Google AdSense policy violations** and
-  are among the most common reasons applications are rejected.
-- Google's helpful-content signals demote sites that add nothing beyond what is already indexed.
-
-**Use the wire as a story-spotting tool.** Rewrite each draft in your own words, add your own
-reporting, analysis or context, delete the banner, then publish. That is what makes the page
-original — and what makes the site monetisable.
-
-Add or remove feeds under **News Wire → Manage sources**. Only add feeds a publisher offers
-openly for syndication, and always keep the source link.
 
 ---
 
@@ -160,12 +137,12 @@ backend/
   app/
     main.py            FastAPI app, CORS, gzip, static media
     config.py          Settings from .env
-    models.py          Users, categories, posts, images, media, feeds, settings
+    models.py          Users, categories, posts, images, media, settings
     schemas.py         Pydantic v2 request/response models
-    bootstrap.py       First-run: tables, 8 categories, admin user, feed list
+    bootstrap.py       First-run: tables, 8 categories, admin user
     deps.py            JWT auth + role guards (admin / editor / author)
-    routers/           auth · public · admin_posts · admin_misc · admin_feeds · feeds_public
-    services/          posts.py (write path, ISR webhook) · ingest.py (RSS)
+    routers/           auth · public · admin_posts · admin_misc · feeds_public
+    services/          posts.py (write path, ISR webhook)
     utils/             security · text (sanitise, slugs, SEO score) · images · seo (JSON-LD)
   seed_demo.py         Starter articles
 frontend/
