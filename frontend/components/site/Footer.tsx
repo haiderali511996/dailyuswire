@@ -32,9 +32,6 @@ export async function Footer() {
             <SocialLink href="https://facebook.com" label="Facebook">
               <path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.7-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12Z" />
             </SocialLink>
-            <SocialLink href="/rss" label="RSS feed">
-              <path d="M4 11a9 9 0 0 1 9 9h-3a6 6 0 0 0-6-6v-3Zm0-7a16 16 0 0 1 16 16h-3A13 13 0 0 0 4 7V4Zm2.5 12a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
-            </SocialLink>
           </div>
         </div>
 
