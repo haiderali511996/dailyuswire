@@ -265,20 +265,6 @@ export function PostEditor({ postId }: { postId?: number }) {
               </div>
 
               <div>
-                <label htmlFor="excerpt" className="label">
-                  Standfirst / excerpt
-                </label>
-                <textarea
-                  id="excerpt"
-                  rows={2}
-                  value={form.excerpt}
-                  onChange={(e) => set('excerpt', e.target.value)}
-                  placeholder="One or two sentences summarising the story. Used on cards and as the fallback meta description."
-                  className="field resize-y"
-                />
-              </div>
-
-              <div>
                 <span className="label">Article body</span>
                 <RichTextEditor
                   value={form.content}

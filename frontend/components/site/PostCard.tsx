@@ -35,7 +35,6 @@ export function HeroCard({ post, priority = true }: { post: PostCardType; priori
           <h2 className="mt-3 font-serif text-2xl font-bold leading-tight text-white sm:text-3xl lg:text-[2.6rem] lg:leading-[1.1]">
             {post.title}
           </h2>
-          <p className="clamp-2 mt-2 max-w-2xl text-sm text-navy-100 sm:text-base">{post.excerpt}</p>
           <Meta post={post} onDark className="mt-3" />
         </div>
       </Link>
@@ -64,7 +63,6 @@ export function StandardCard({ post, priority = false }: { post: PostCardType; p
             {post.title}
           </Link>
         </h3>
-        <p className="clamp-3 mt-1.5 text-sm leading-relaxed text-ink-muted">{post.excerpt}</p>
         <Meta post={post} className="mt-auto pt-3" />
       </div>
     </article>
@@ -135,7 +133,6 @@ export function FeatureCard({ post }: { post: PostCardType }) {
             {post.title}
           </Link>
         </h2>
-        <p className="clamp-4 mt-2 text-sm leading-relaxed text-ink-muted sm:text-base">{post.excerpt}</p>
         <Meta post={post} className="mt-4" />
       </div>
     </article>

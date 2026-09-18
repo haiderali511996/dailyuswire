@@ -117,12 +117,6 @@ export default async function ArticlePage({ params }: Props) {
                 {post.title}
               </h1>
 
-              {post.excerpt && (
-                <p className="mt-4 font-serif text-lg leading-relaxed text-ink-muted sm:text-xl">
-                  {post.excerpt}
-                </p>
-              )}
-
               <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-y border-rule py-3">
                 <div className="flex items-center gap-3">
                   {post.author && (
