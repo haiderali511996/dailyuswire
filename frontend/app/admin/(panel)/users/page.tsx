@@ -126,13 +126,13 @@ export default function UsersPage() {
           </div>
 
           <div>
-            <label htmlFor="u-bio" className="label">Bio</label>
+            <label htmlFor="u-bio" className="label">Bio <span className="font-normal text-ink-faint">(optional)</span></label>
             <textarea id="u-bio" rows={3} value={draft.bio} onChange={(e) => setDraft({ ...draft, bio: e.target.value })} className="field resize-y" placeholder="What this writer covers and their background. Shown on every article they write." />
             <p className="hint">A real, specific bio supports E-E-A-T and helps AdSense approval.</p>
           </div>
 
           <div>
-            <label htmlFor="u-twitter" className="label">X / Twitter handle</label>
+            <label htmlFor="u-twitter" className="label">X / Twitter handle <span className="font-normal text-ink-faint">(optional)</span></label>
             <input id="u-twitter" value={draft.twitter} onChange={(e) => setDraft({ ...draft, twitter: e.target.value })} placeholder="@handle" className="field" />
           </div>
 

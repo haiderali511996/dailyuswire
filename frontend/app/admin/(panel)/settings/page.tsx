@@ -83,16 +83,25 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) return <p className="text-sm text-ink-muted">Loading settings...</p>;
+  if (!can('admin')) {
+    return (
+      <div className="card p-6">
+        <h1 className="font-serif text-2xl font-bold text-navy-900">Settings</h1>
+        <p className="mt-2 text-sm text-ink-muted">
+          Site settings are available to admins only.
+        </p>
+      </div>
+    );
+  }
 
-  const readOnly = !can('admin');
+  if (loading) return <p className="text-sm text-ink-muted">Loading settings...</p>;
 
   return (
     <div className="space-y-5">
       <div>
         <h1 className="font-serif text-2xl font-bold text-navy-900">Settings</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          {readOnly ? 'Only admins can change these.' : 'Site-wide configuration for SEO, ads and analytics.'}
+          Site-wide configuration for SEO, ads and analytics.
         </p>
       </div>
 
@@ -108,7 +117,7 @@ export default function SettingsPage() {
 
       <form onSubmit={save} className="space-y-5">
         {GROUPS.map((group) => (
-          <fieldset key={group.title} className="card p-5" disabled={readOnly}>
+          <fieldset key={group.title} className="card p-5">
             <legend className="sr-only">{group.title}</legend>
             <h2 className="font-serif text-lg font-bold text-navy-900">{group.title}</h2>
             <p className="mt-1 text-sm text-ink-muted">{group.blurb}</p>
@@ -143,11 +152,9 @@ export default function SettingsPage() {
           </fieldset>
         ))}
 
-        {!readOnly && (
-          <button type="submit" disabled={saving} className="btn-primary">
-            {saving ? 'Saving...' : 'Save settings'}
-          </button>
-        )}
+        <button type="submit" disabled={saving} className="btn-primary">
+          {saving ? 'Saving...' : 'Save settings'}
+        </button>
       </form>
 
       <section className="card p-5">

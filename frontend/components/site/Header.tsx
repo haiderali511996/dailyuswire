@@ -30,15 +30,6 @@ export async function Header() {
             <Link href="/contact" className="link-underline hover:text-navy-100">
               Contact
             </Link>
-            <Link href="/rss" className="link-underline hover:text-navy-100">
-              RSS
-            </Link>
-            <Link
-              href="/admin"
-              className="rounded border border-white/30 px-2 py-0.5 font-semibold hover:bg-white/10"
-            >
-              Newsroom
-            </Link>
           </div>
         </div>
       </div>
