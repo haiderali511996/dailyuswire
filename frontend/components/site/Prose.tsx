@@ -10,8 +10,8 @@ export function Prose({
 }) {
   return (
     <div className="shell py-10">
-      <div className="mx-auto max-w-prose">
-        <h1 className="font-serif text-3xl font-bold leading-tight text-navy-900 sm:text-4xl">{title}</h1>
+      <div className="w-full">
+        <h1 className="font-serif text-3xl font-bold leading-tight text-navy-900 sm:text-4xl lg:text-5xl">{title}</h1>
         {updated && <p className="mt-2 text-sm text-ink-faint">Last updated: {updated}</p>}
         <div className="article-body mt-8">{children}</div>
       </div>
