@@ -5,15 +5,11 @@ import { SITE_NAME } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
-  description: `Reach the ${SITE_NAME} newsroom with news tips, corrections, advertising enquiries or general questions.`,
+  description: `Get in touch with the ${SITE_NAME} team with questions, feedback or enquiries.`,
   alternates: { canonical: '/contact' },
 };
 
 const DESKS = [
-  { label: 'Newsroom & tips', email: 'newsroom@dailyuswire.com', note: 'Story tips, press releases and embargoed material.' },
-  { label: 'Corrections', email: 'corrections@dailyuswire.com', note: 'Spotted an error? We correct on the page and note the change.' },
-  { label: 'Advertising', email: 'ads@dailyuswire.com', note: 'Display, sponsorship and partnership enquiries.' },
-  { label: 'General', email: 'hello@dailyuswire.com', note: 'Everything else, including reader feedback.' },
   { label: 'Information', email: 'info@dailyuswire.com', note: 'General information about Daily US Wire and our coverage.' },
   { label: 'Editor (direct)', email: 'iftikharloona1@gmail.com', note: 'Direct line to the editor for urgent or private matters.' },
 ];
@@ -26,7 +22,7 @@ export default function ContactPage() {
         days.
       </p>
 
-      <div className="not-prose mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="not-prose mt-8 grid gap-4 sm:grid-cols-2">
         {DESKS.map((desk) => (
           <div key={desk.email} className="card p-5">
             <h2 className="text-sm font-bold uppercase tracking-wide text-flag-600">{desk.label}</h2>

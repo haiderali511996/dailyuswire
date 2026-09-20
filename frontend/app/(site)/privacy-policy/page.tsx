@@ -96,7 +96,7 @@ export default function PrivacyPage() {
         of California (CCPA/CPRA) may request disclosure of the categories of personal information
         collected and may opt out of its &ldquo;sale&rdquo; or &ldquo;sharing&rdquo;. Residents of
         the EEA and UK have equivalent rights under the GDPR. To exercise any of these, email{' '}
-        <a href="mailto:privacy@dailyuswire.com">privacy@dailyuswire.com</a>.
+        <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>.
       </p>
 
       <h2>Children</h2>
@@ -120,7 +120,7 @@ export default function PrivacyPage() {
 
       <h2>Contact</h2>
       <p>
-        Questions about this policy: <a href="mailto:privacy@dailyuswire.com">privacy@dailyuswire.com</a>,
+        Questions about this policy: <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>,
         or use our <Link href="/contact">contact page</Link>.
       </p>
     </Prose>

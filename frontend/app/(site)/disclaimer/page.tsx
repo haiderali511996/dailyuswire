@@ -60,7 +60,7 @@ export default function DisclaimerPage() {
       <h2>Corrections</h2>
       <p>
         If you believe we have published something inaccurate, email{' '}
-        <a href="mailto:corrections@dailyuswire.com">corrections@dailyuswire.com</a>. We correct on
+        <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>. We correct on
         the page and note what changed.
       </p>
     </Prose>
