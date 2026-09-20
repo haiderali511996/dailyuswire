@@ -49,7 +49,7 @@ export default function EditorialPolicyPage() {
       <p>
         Errors of fact are corrected on the article itself with a note explaining what changed and
         when. Significant corrections are flagged at the top of the article. Report an error to{' '}
-        <a href="mailto:corrections@dailyuswire.com">corrections@dailyuswire.com</a>.
+        <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>.
       </p>
 
       <h2>Independence</h2>

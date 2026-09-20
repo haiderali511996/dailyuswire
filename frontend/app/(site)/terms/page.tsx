@@ -65,7 +65,7 @@ export default function TermsPage() {
 
       <h2>Contact</h2>
       <p>
-        Questions: <a href="mailto:legal@dailyuswire.com">legal@dailyuswire.com</a>.
+        Questions: <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>.
       </p>
     </Prose>
   );

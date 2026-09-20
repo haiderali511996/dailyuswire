@@ -98,7 +98,7 @@ DEFAULT_SETTINGS: dict[str, str] = {
     "twitter_handle": "@dailyuswire",
     "facebook_url": "",
     "youtube_url": "",
-    "contact_email": "editor@dailyuswire.com",
+    "contact_email": "info@dailyuswire.com",
 }
 
 
