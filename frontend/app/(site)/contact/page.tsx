@@ -14,6 +14,8 @@ const DESKS = [
   { label: 'Corrections', email: 'corrections@dailyuswire.com', note: 'Spotted an error? We correct on the page and note the change.' },
   { label: 'Advertising', email: 'ads@dailyuswire.com', note: 'Display, sponsorship and partnership enquiries.' },
   { label: 'General', email: 'hello@dailyuswire.com', note: 'Everything else, including reader feedback.' },
+  { label: 'Information', email: 'info@dailyuswire.com', note: 'General information about Daily US Wire and our coverage.' },
+  { label: 'Editor (direct)', email: 'iftikharloona1@gmail.com', note: 'Direct line to the editor for urgent or private matters.' },
 ];
 
 export default function ContactPage() {
@@ -24,7 +26,7 @@ export default function ContactPage() {
         days.
       </p>
 
-      <div className="not-prose mt-8 grid gap-4 sm:grid-cols-2">
+      <div className="not-prose mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {DESKS.map((desk) => (
           <div key={desk.email} className="card p-5">
             <h2 className="text-sm font-bold uppercase tracking-wide text-flag-600">{desk.label}</h2>
