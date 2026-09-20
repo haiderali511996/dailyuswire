@@ -5,7 +5,6 @@ import { notFound, redirect } from 'next/navigation';
 
 import { AdSlot } from '@/components/site/AdSlot';
 import { ArticleBody } from '@/components/site/ArticleBody';
-import { ArticleGallery } from '@/components/site/ArticleGallery';
 import { Breadcrumbs } from '@/components/site/Breadcrumbs';
 import { JsonLd } from '@/components/site/JsonLd';
 import { ListCard, StandardCard } from '@/components/site/PostCard';
@@ -16,7 +15,7 @@ import { TableOfContents } from '@/components/site/TableOfContents';
 import { ViewCounter } from '@/components/site/ViewCounter';
 import { getPost, getPostSchema, getPosts, getRelated, getTrending } from '@/lib/api';
 import { SITE_NAME, absoluteUrl, mediaUrl, postPath } from '@/lib/config';
-import { formatDate, formatDateTime } from '@/lib/format';
+import { formatDate } from '@/lib/format';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -133,11 +132,6 @@ export default async function ArticlePage({ params }: Props) {
                             Published <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
                           </>
                         )}
-                        {post.updated_at && post.updated_at !== post.published_at && (
-                          <> · Updated {formatDateTime(post.updated_at)}</>
-                        )}
-                        {' · '}
-                        {post.reading_time} min read
                       </p>
                     </div>
                   )}
@@ -171,8 +165,6 @@ export default async function ArticlePage({ params }: Props) {
             <div className="mt-6">
               <ArticleBody html={post.content} adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_IN_ARTICLE} />
             </div>
-
-            <ArticleGallery images={post.images} title={post.title} />
 
             {post.source_url && (
               <p className="mt-8 rounded-md bg-wash p-4 text-sm text-ink-muted">

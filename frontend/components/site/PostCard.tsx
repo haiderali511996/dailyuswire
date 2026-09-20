@@ -161,13 +161,7 @@ export function Meta({
           <span aria-hidden>·</span>
         </>
       )}
-      {post.published_at && (
-        <>
-          <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
-          <span aria-hidden>·</span>
-        </>
-      )}
-      <span>{post.reading_time} min read</span>
+      {post.published_at && <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>}
     </p>
   );
 }

@@ -299,7 +299,6 @@ class SeoAnalysisIn(BaseModel):
     content: str = ""
     focus_keyword: str = ""
     cover_image: str = ""
-    image_count: int = 0
 
 
 class DashboardStats(BaseModel):
