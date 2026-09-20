@@ -200,22 +200,6 @@ export default async function ArticlePage({ params }: Props) {
               <ShareBar url={url} title={post.title} />
             </div>
 
-            {post.author?.bio && (
-              <section className="mt-8 rounded-lg border border-rule bg-wash p-5" aria-labelledby="about-author">
-                <h2 id="about-author" className="kicker text-flag-600">
-                  About the author
-                </h2>
-                <p className="mt-2 font-serif text-lg font-bold text-navy-900">{post.author.name}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{post.author.bio}</p>
-                <Link
-                  href={`/author/${post.author.slug}`}
-                  className="mt-3 inline-block text-sm font-semibold text-navy-800 hover:text-flag-600"
-                >
-                  More from {post.author.name} &rarr;
-                </Link>
-              </section>
-            )}
-
             <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} format="rectangle" />
 
             {related.length > 0 && (
