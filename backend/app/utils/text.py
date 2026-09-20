@@ -134,7 +134,6 @@ def seo_score(
     content: str,
     focus_keyword: str,
     cover_image: str,
-    image_count: int,
 ) -> dict:
     """A Yoast-style checklist the admin editor renders live."""
     text = strip_tags(content)
@@ -155,8 +154,6 @@ def seo_score(
     add(word_count >= 600, "Article length",
         f"{word_count} words - 600+ ranks and monetises far better.", 2)
     add(bool(cover_image), "Cover image set", "Every article needs a cover image for OG/Twitter cards.", 1)
-    add(image_count >= 3, "In-article images",
-        f"{image_count} images - use 3-5 with descriptive alt text.", 1)
     add(len(heading_outline(content)) >= 2, "Subheadings",
         "Use at least two H2/H3 subheadings to structure the article.", 1)
     add('href="http' in (content or ""), "Outbound links",

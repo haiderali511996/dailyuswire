@@ -9,9 +9,8 @@ import { adminApi } from '@/lib/admin-api';
 import { useAuth } from '@/lib/auth-context';
 import { SITE_URL, mediaUrl } from '@/lib/config';
 import { toDatetimeLocal } from '@/lib/format';
-import type { Category, MediaItem, Post, PostImage, PostStatus, User } from '@/lib/types';
+import type { Category, MediaItem, Post, PostStatus, User } from '@/lib/types';
 
-import { ImageSet } from './ImageSet';
 import { MediaPicker } from './MediaPicker';
 import { RichTextEditor } from './RichTextEditor';
 import { SeoPanel } from './SeoPanel';
@@ -42,7 +41,6 @@ interface FormState {
   source_name: string;
   source_url: string;
   tags: string[];
-  images: PostImage[];
 }
 
 const EMPTY: FormState = {
@@ -50,7 +48,7 @@ const EMPTY: FormState = {
   category_id: null, author_id: null, status: 'draft', published_at: '',
   meta_title: '', meta_description: '', meta_keywords: '', focus_keyword: '', canonical_url: '',
   og_image: '', no_index: false, is_featured: false, is_breaking: false, is_editors_pick: false,
-  source_name: '', source_url: '', tags: [], images: [],
+  source_name: '', source_url: '', tags: [],
 };
 
 function slugify(value: string): string {
@@ -142,7 +140,6 @@ export function PostEditor({ postId }: { postId?: number }) {
       status,
       published_at: form.published_at ? new Date(form.published_at).toISOString() : null,
       slug: form.slug || undefined,
-      images: form.images.map((img, i) => ({ ...img, position: i })),
     };
 
     try {
@@ -279,7 +276,6 @@ export function PostEditor({ postId }: { postId?: number }) {
                 </p>
               </div>
 
-              <ImageSet images={form.images} onChange={(next) => set('images', next)} />
             </>
           )}
 
@@ -571,7 +567,6 @@ export function PostEditor({ postId }: { postId?: number }) {
             focusKeyword={form.focus_keyword}
             content={form.content}
             coverImage={form.cover_image}
-            imageCount={form.images.length}
           />
         </div>
       </div>
@@ -624,7 +619,6 @@ function toForm(post: Post): FormState {
     source_name: post.source_name,
     source_url: post.source_url,
     tags: post.tags.map((t) => t.name),
-    images: post.images.map((img, i) => ({ ...img, position: i })),
   };
 }
 

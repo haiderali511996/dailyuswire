@@ -51,7 +51,6 @@ def news_article(post: dict) -> dict:
     site = settings.site_url.rstrip("/")
     url = f"{site}/{post['category']['slug']}/{post['slug']}" if post.get("category") else f"{site}/{post['slug']}"
     images = [_abs(post["cover_image"])] if post.get("cover_image") else []
-    images += [_abs(i["url"]) for i in post.get("images", [])]
     return {
         "@context": "https://schema.org",
         "@type": "NewsArticle",
