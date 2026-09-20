@@ -59,8 +59,7 @@ export default async function AuthorPage({ params, searchParams }: Props) {
           {author.name.slice(0, 1)}
         </div>
         <div>
-          <p className="kicker text-flag-600">Author</p>
-          <h1 className="mt-1 font-serif text-2xl font-bold text-navy-900 sm:text-3xl">{author.name}</h1>
+          <h1 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">{author.name}</h1>
           {author.bio && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">{author.bio}</p>}
           <p className="mt-2 text-xs text-ink-faint">
             {data.total} published article{data.total === 1 ? '' : 's'}
