@@ -1,12 +1,12 @@
 import Link from 'next/link';
 
-import { getTags, getTrending } from '@/lib/api';
+import { getTrending } from '@/lib/api';
 
 import { AdSlot } from './AdSlot';
 import { ListCard } from './PostCard';
 
 export async function Sidebar({ className = '' }: { className?: string }) {
-  const [trending, tags] = await Promise.all([getTrending(6), getTags(18)]);
+  const trending = await getTrending(6);
 
   return (
     <aside className={`space-y-8 ${className}`}>
@@ -24,26 +24,6 @@ export async function Sidebar({ className = '' }: { className?: string }) {
               </li>
             ))}
           </ol>
-        </section>
-      )}
-
-      {tags.length > 0 && (
-        <section aria-labelledby="topics-heading">
-          <h2 id="topics-heading" className="rule-top pt-2 font-serif text-lg font-bold uppercase text-navy-900">
-            Topics
-          </h2>
-          <ul className="mt-4 flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <li key={tag.id}>
-                <Link
-                  href={`/tag/${tag.slug}`}
-                  className="inline-block rounded-full border border-rule bg-wash px-3 py-1 text-xs font-medium text-ink-muted transition hover:border-navy-800 hover:bg-navy-800 hover:text-white"
-                >
-                  #{tag.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
         </section>
       )}
 
