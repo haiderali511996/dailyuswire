@@ -112,15 +112,19 @@ def publish_due_posts(db: Session) -> int:
     return len(due)
 
 
-async def revalidate_frontend(paths: list[str]) -> None:
-    """Ping Next.js so ISR pages refresh the moment an editor publishes."""
+async def revalidate_frontend(paths: list[str], tags: list[str] | None = None) -> None:
+    """Ping Next.js so ISR pages refresh the moment an editor publishes.
+
+    ``tags`` narrows which cached fetches are expired; when omitted the
+    frontend falls back to expiring all post content.
+    """
     if not settings.revalidate_url or not settings.revalidate_secret:
         return
+    body: dict = {"secret": settings.revalidate_secret, "paths": paths}
+    if tags is not None:
+        body["tags"] = tags
     try:
         async with httpx.AsyncClient(timeout=5) as client:
-            await client.post(
-                settings.revalidate_url,
-                json={"secret": settings.revalidate_secret, "paths": paths},
-            )
+            await client.post(settings.revalidate_url, json=body)
     except Exception:  # noqa: BLE001 - revalidation must never break a save
         pass

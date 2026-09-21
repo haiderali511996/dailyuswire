@@ -85,7 +85,7 @@ export async function getTags(limit = 24): Promise<Tag[]> {
 export async function getAuthor(slug: string) {
   return api<{ id: number; name: string; slug: string; bio: string; avatar: string; twitter: string }>(
     `/api/authors/${encodeURIComponent(slug)}`,
-    { revalidate: 900 },
+    { revalidate: 900, tags: ['content', 'authors'] },
   );
 }
 
