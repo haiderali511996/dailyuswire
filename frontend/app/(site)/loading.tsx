@@ -4,7 +4,7 @@ export default function Loading() {
       <span className="sr-only">Loading stories</span>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="aspect-[2/1] w-full animate-pulse rounded-lg bg-wash" />
+          <div className="aspect-video w-full animate-pulse rounded-lg bg-wash" />
         </div>
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (

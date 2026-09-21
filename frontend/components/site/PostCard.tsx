@@ -19,7 +19,7 @@ export function HeroCard({ post, priority = true }: { post: PostCardType; priori
   return (
     <article className="group relative overflow-hidden rounded-lg bg-navy-950">
       <Link href={postPath(post)} className="block">
-        <div className="relative aspect-[16/10] w-full sm:aspect-[16/9] lg:aspect-[2/1]">
+        <div className="relative aspect-video w-full">
           <Image
             src={cover(post)}
             alt={post.cover_alt || post.title}
@@ -46,7 +46,7 @@ export function HeroCard({ post, priority = true }: { post: PostCardType; priori
 export function StandardCard({ post, priority = false }: { post: PostCardType; priority?: boolean }) {
   return (
     <article className="group flex h-full flex-col">
-      <Link href={postPath(post)} className="relative block aspect-[16/10] w-full overflow-hidden rounded-md bg-wash">
+      <Link href={postPath(post)} className="relative block aspect-video w-full overflow-hidden rounded-md bg-wash">
         <Image
           src={cover(post)}
           alt={post.cover_alt || post.title}
@@ -87,7 +87,7 @@ export function ListCard({
         </span>
       )}
       {showImage && (
-        <Link href={postPath(post)} className="relative block h-16 w-24 shrink-0 overflow-hidden rounded bg-wash sm:h-[4.5rem] sm:w-28">
+        <Link href={postPath(post)} className="relative block aspect-video w-24 shrink-0 self-start overflow-hidden rounded bg-wash sm:w-28">
           <Image
             src={cover(post)}
             alt={post.cover_alt || post.title}
@@ -116,7 +116,7 @@ export function ListCard({
 export function FeatureCard({ post }: { post: PostCardType }) {
   return (
     <article className="group grid gap-4 sm:grid-cols-2 sm:gap-6">
-      <Link href={postPath(post)} className="relative block aspect-[16/10] overflow-hidden rounded-md bg-wash">
+      <Link href={postPath(post)} className="relative block aspect-video w-full overflow-hidden rounded-md bg-wash">
         <Image
           src={cover(post)}
           alt={post.cover_alt || post.title}
