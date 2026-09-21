@@ -30,6 +30,7 @@ from app.schemas import (
     UserOut,
     UserUpdate,
 )
+from app.services.posts import revalidate_frontend
 from app.utils.images import UploadError, save_image
 from app.utils.security import hash_password
 from app.utils.text import slugify, unique_slug
@@ -141,7 +142,7 @@ def create_user(db: DbSession, admin: AdminUser, payload: UserCreate) -> User:
 
 
 @router.patch("/users/{user_id}", response_model=UserOut)
-def update_user(db: DbSession, current: CurrentUser, user_id: int, payload: UserUpdate) -> User:
+async def update_user(db: DbSession, current: CurrentUser, user_id: int, payload: UserUpdate) -> User:
     if current.role != Role.admin and current.id != user_id:
         raise HTTPException(status_code=403, detail="You can only edit your own profile")
     target = db.get(User, user_id)
@@ -159,6 +160,9 @@ def update_user(db: DbSession, current: CurrentUser, user_id: int, payload: User
         target.hashed_password = hash_password(payload.password)
     db.commit()
     db.refresh(target)
+    # The public author page and every byline cache this profile, so refresh
+    # them now rather than waiting out ISR.
+    await revalidate_frontend([f"/author/{target.slug}"], tags=["content", "authors"])
     return target
 
 
