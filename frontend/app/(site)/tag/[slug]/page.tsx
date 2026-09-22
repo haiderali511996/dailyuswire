@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { Breadcrumbs } from '@/components/site/Breadcrumbs';
 import { Pagination } from '@/components/site/Pagination';
@@ -14,13 +15,16 @@ function pretty(slug: string): string {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const { page } = await searchParams;
+  const pageNum = Math.max(1, Number(page) || 1);
   const name = pretty(slug);
   return {
-    title: `${name} - News & Analysis`,
+    title: `${name} - News & Analysis${pageNum > 1 ? ` - Page ${pageNum}` : ''}`,
     description: `Every ${SITE_NAME} story tagged ${name}, newest first.`,
-    alternates: { canonical: `/tag/${slug}` },
+    alternates: { canonical: pageNum > 1 ? `/tag/${slug}?page=${pageNum}` : `/tag/${slug}` },
+    robots: pageNum > 1 ? { index: false, follow: true } : undefined,
   };
 }
 
@@ -29,6 +33,9 @@ export default async function TagPage({ params, searchParams }: Props) {
   const { page } = await searchParams;
   const pageNum = Math.max(1, Number(page) || 1);
   const data = await getPosts({ tag: slug, page: pageNum, per_page: 12 });
+  // A tag nobody has used is not a page: answer 404 instead of an indexable
+  // empty shell for every string a crawler can invent after /tag/.
+  if (data.total === 0) notFound();
   const name = pretty(slug);
 
   return (

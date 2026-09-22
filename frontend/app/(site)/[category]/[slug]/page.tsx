@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import { AdSlot } from '@/components/site/AdSlot';
 import { ArticleBody } from '@/components/site/ArticleBody';
@@ -35,19 +35,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const path = postPath(post);
   const image = mediaUrl(post.og_image || post.cover_image);
+  // Self-canonical by default, derived from the live category + slug. An
+  // editor-supplied canonical (syndicated piece) wins, and og:url follows it
+  // so social scrapers and search engines agree on which URL is the original.
+  const canonical = post.canonical_url || absoluteUrl(path);
 
   return {
     title: post.meta_title || post.title,
     description: post.meta_description || post.excerpt,
     keywords: post.meta_keywords || post.tags.map((t) => t.name).join(', '),
     authors: post.author ? [{ name: post.author.name, url: absoluteUrl(`/author/${post.author.slug}`) }] : undefined,
-    alternates: { canonical: post.canonical_url || path },
+    alternates: { canonical },
     robots: post.no_index
       ? { index: false, follow: true }
       : { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
     openGraph: {
       type: 'article',
-      url: absoluteUrl(path),
+      url: canonical,
       title: post.meta_title || post.title,
       description: post.meta_description || post.excerpt,
       siteName: SITE_NAME,
@@ -74,7 +78,7 @@ export default async function ArticlePage({ params }: Props) {
 
   // Keep one canonical URL per article: /<real-category>/<slug>.
   const realCategory = post.category?.slug ?? 'news';
-  if (realCategory !== categorySlug) redirect(postPath(post));
+  if (realCategory !== categorySlug) permanentRedirect(postPath(post));
 
   const [related, trending, schema] = await Promise.all([
     getRelated(slug, 4),
@@ -149,6 +153,7 @@ export default async function ArticlePage({ params }: Props) {
                     fill
                     sizes="(max-width: 1024px) 100vw, 66vw"
                     priority
+                    fetchPriority="high"
                     className="object-cover"
                   />
                 </div>

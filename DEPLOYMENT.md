@@ -318,6 +318,59 @@ one by hand from Actions → *Deploy to cPanel* → *Run workflow*.
 Then **change your admin password** under Team, and delete or rewrite the eight
 starter articles.
 
+### SEO smoke test before you submit to Search Console
+
+Every one of these is generated from `SITE_URL` (backend `.env`) and
+`NEXT_PUBLIC_SITE_URL` (GitHub variable). If either is wrong you will see
+`localhost` or the API hostname where the site domain should be.
+
+1. `https://yourdomain.com/robots.txt` → lists both sitemaps under your domain
+2. `https://yourdomain.com/sitemap.xml` → every `<loc>` starts with `https://yourdomain.com/`
+3. `https://yourdomain.com/news-sitemap.xml` → dates end in `+00:00`
+4. `https://yourdomain.com/rss` → the channel `<link>` is `https://yourdomain.com/rss`, not the API host
+5. View source on any article: `<link rel="canonical">`, `og:url` and the
+   `mainEntityOfPage` in the JSON-LD all show the same `https://yourdomain.com/<section>/<slug>`
+6. `https://yourdomain.com/news/this-does-not-exist` → HTTP **404**, not 200
+   (check with `curl -I`); a wrong-section URL such as
+   `https://yourdomain.com/sports/<a-health-slug>` → HTTP **308** to the right section
+7. Paste an article URL into Google's Rich Results Test → `NewsArticle` and
+   `BreadcrumbList` detected with no errors
+
+Only then add the property in Search Console and submit `sitemap.xml` and
+`news-sitemap.xml`.
+
+### If PageSpeed shows a slow "Speed Index" with blank first frames
+
+The code itself scores 95+ on mobile in Lighthouse against a local build. When the
+live site scores much lower and the filmstrip stays blank for several seconds, the
+time is being spent before the first byte, and on cPanel that is almost always
+Passenger starting the Node app from cold: it shuts the app down after a few idle
+minutes and the next visitor pays a multi-second boot. Check the "Initial server
+response time" audit in the PageSpeed report; anything over ~600 ms confirms it.
+
+Two things fix it:
+
+1. Keep one worker alive. Add to the `.htaccess` in the **domain's document
+   root** (the one cPanel wrote, below its own `# DO NOT REMOVE` block):
+
+   ```apache
+   PassengerMinInstances 1
+   ```
+
+   If the host has locked that directive, ask support to enable it for the
+   domain, or use step 2 alone.
+
+2. Warm it from a cron job. cPanel → **Cron Jobs**, every 5 minutes:
+
+   ```bash
+   curl -s -o /dev/null https://yourdomain.com/ ; curl -s -o /dev/null https://api.yourdomain.com/health
+   ```
+
+Also make sure `API_INTERNAL_URL` on the Node app points at the API over the
+server's own hostname if the host allows it; every server-rendered page makes
+several API calls, and going out through the public DNS name and back in is
+noticeably slower on shared hosting.
+
 ---
 
 ## Troubleshooting

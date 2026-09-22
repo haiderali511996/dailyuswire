@@ -9,6 +9,8 @@ from bleach.css_sanitizer import CSSSanitizer
 from slugify import slugify as _slugify
 from sqlalchemy.orm import Session
 
+from app.utils.seo import normalize_canonical, post_url
+
 ALLOWED_TAGS = [
     "p", "br", "hr", "span", "div", "strong", "b", "em", "i", "u", "s", "sub", "sup",
     "h1", "h2", "h3", "h4", "h5", "h6",
@@ -134,6 +136,9 @@ def seo_score(
     content: str,
     focus_keyword: str,
     cover_image: str,
+    slug: str = "",
+    category_slug: str = "",
+    canonical_url: str = "",
 ) -> dict:
     """A Yoast-style checklist the admin editor renders live."""
     text = strip_tags(content)
@@ -158,6 +163,19 @@ def seo_score(
         "Use at least two H2/H3 subheadings to structure the article.", 1)
     add('href="http' in (content or ""), "Outbound links",
         "Link to at least one authoritative source.", 1)
+
+    self_url = post_url({"slug": slug or "your-slug", "category": {"slug": category_slug or "news"}})
+    try:
+        custom = normalize_canonical(canonical_url)
+    except ValueError as exc:
+        add(False, "Canonical URL", f"{exc}. Leave it blank to point at this article.", 1)
+    else:
+        if not custom or custom == self_url:
+            add(True, "Canonical URL", f"Set automatically to {self_url}", 1)
+        else:
+            add(True, "Canonical URL",
+                f"Points at {custom} - search engines will credit that page, not this one. "
+                "Only keep this if the article is republished from there.", 1)
 
     if kw:
         density = lower_text.count(kw) / word_count * 100 if word_count else 0

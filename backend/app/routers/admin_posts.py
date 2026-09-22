@@ -103,10 +103,10 @@ async def create_post(db: DbSession, user: CurrentUser, payload: PostCreate) -> 
     apply_content(post, payload.content)
     ensure_slug(db, post, payload.slug or payload.title)
     apply_status(post, payload.status, payload.published_at)
-    apply_seo_defaults(post)
     post.tags = resolve_tags(db, payload.tags)
     db.add(post)
-    db.flush()
+    db.flush()  # loads post.category so the SEO defaults see the real section
+    apply_seo_defaults(post)
     sync_images(db, post, payload.images)
     db.commit()
     db.refresh(post)
@@ -139,6 +139,8 @@ async def update_post(db: DbSession, user: CurrentUser, post_id: int, payload: P
     if payload.images is not None:
         sync_images(db, post, payload.images)
     apply_status(post, payload.status, payload.published_at)
+    db.flush()
+    db.refresh(post, ['category'])  # a changed category_id must show in post.category first
     apply_seo_defaults(post)
 
     db.commit()

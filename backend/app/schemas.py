@@ -1,24 +1,16 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, PlainSerializer
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, PlainSerializer, computed_field, field_validator
 
 from app.models import PostStatus, Role
+from app.utils.seo import iso_utc, normalize_canonical, post_url
 
-
-def _as_utc_iso(value: datetime | None) -> str | None:
-    """SQLite drops tzinfo, so re-attach UTC before serialising.
-
-    Google requires a timezone offset on datePublished / article:published_time;
-    a naive timestamp is treated as invalid.
-    """
-    if value is None:
-        return None
-    if value.tzinfo is None:
-        value = value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc).isoformat()
+# SQLite drops tzinfo, so re-attach UTC before serialising. Google requires a
+# timezone offset on datePublished / article:published_time.
+_as_utc_iso = iso_utc
 
 
 UTCDateTime = Annotated[datetime, PlainSerializer(_as_utc_iso, return_type=str, when_used="json")]
@@ -178,6 +170,11 @@ class PostBase(BaseModel):
     source_name: str = ""
     source_url: str = ""
 
+    @field_validator("canonical_url", mode="before")
+    @classmethod
+    def _clean_canonical(cls, value: str | None) -> str:
+        return normalize_canonical(value)
+
 
 class PostCreate(PostBase):
     slug: str | None = None
@@ -212,6 +209,11 @@ class PostUpdate(BaseModel):
     source_url: str | None = None
     tags: list[str] | None = None
     images: list[PostImageIn] | None = None
+
+    @field_validator("canonical_url", mode="before")
+    @classmethod
+    def _clean_canonical(cls, value: str | None) -> str | None:
+        return None if value is None else normalize_canonical(value)
 
 
 class PostCard(ORMModel):
@@ -250,6 +252,18 @@ class PostOut(PostCard):
     source_url: str = ""
     tags: list[TagOut] = []
     images: list[PostImageOut] = []
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def url(self) -> str:
+        """Absolute permalink - /<category>/<slug> on the public site."""
+        return post_url({"slug": self.slug, "category": {"slug": self.category.slug} if self.category else None})
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def canonical(self) -> str:
+        """What <link rel="canonical"> should say: the editor's override or the article itself."""
+        return self.canonical_url or self.url
 
 
 class Paginated(BaseModel):
@@ -299,6 +313,9 @@ class SeoAnalysisIn(BaseModel):
     content: str = ""
     focus_keyword: str = ""
     cover_image: str = ""
+    slug: str = ""
+    category_slug: str = ""
+    canonical_url: str = ""
 
 
 class DashboardStats(BaseModel):

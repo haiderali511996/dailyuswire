@@ -27,7 +27,13 @@ Entertainment, Crypto, Business, Lifestyle and Marketing.
 
 **SEO**
 - `sitemap.xml`, Google News `news-sitemap.xml`, `robots.txt`, RSS per site and per category
-- Per-article meta title/description/keywords, canonical URL, noindex toggle
+- `robots.txt` explicitly welcomes AI crawlers and assistants (GPTBot, ClaudeBot, PerplexityBot,
+  Google-Extended, Applebot and others) and `/llms.txt` gives them a Markdown index of sections
+  and current stories
+- Per-article meta title/description/keywords, noindex toggle
+- Canonical URL set automatically on every article (`SITE_URL/<category>/<slug>`), mirrored in
+  `og:url`, JSON-LD, RSS and both sitemaps; an optional override for syndicated pieces is
+  validated and normalised (scheme added, tracking parameters and fragments stripped)
 - JSON-LD: `NewsArticle`, `BreadcrumbList`, `NewsMediaOrganization`, `WebSite` + Sitelinks Search
 - Full Open Graph and Twitter card tags, timezone-aware publish/modify dates
 - ISR with on-publish webhook revalidation — pages update instantly, stay static

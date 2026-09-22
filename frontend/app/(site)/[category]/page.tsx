@@ -108,7 +108,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           <div>
             {pageNum === 1 && lead && (
               <>
-                <FeatureCard post={lead} />
+                <FeatureCard post={lead} priority />
                 <hr className="my-8 border-rule" />
               </>
             )}

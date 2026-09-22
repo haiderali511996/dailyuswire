@@ -13,7 +13,9 @@ import type { Metadata } from 'next';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: `${SITE_NAME} - Breaking US News, Health, Sports, Crypto & Business`,
+  // `absolute` skips the layout's "%s | Daily US Wire" template, which would
+  // otherwise append the site name a second time.
+  title: { absolute: `${SITE_NAME} - Breaking US News, Health, Sports, Crypto & Business` },
   description: SITE_DESCRIPTION,
   alternates: { canonical: '/' },
 };
