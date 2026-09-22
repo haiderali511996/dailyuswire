@@ -1,13 +1,14 @@
-import { ADSENSE_CLIENT } from '@/lib/config';
+import { getAdUnit } from '@/lib/site-settings';
 
-import { AdSlot } from './AdSlot';
+import { AdSlotClient } from './AdSlotClient';
 
 /**
  * Renders sanitised article HTML and drops an in-article ad after the third
  * paragraph - the placement AdSense recommends for long-form news.
  */
-export function ArticleBody({ html, adSlot }: { html: string; adSlot?: string }) {
-  if (!ADSENSE_CLIENT || !adSlot) {
+export async function ArticleBody({ html }: { html: string }) {
+  const unit = await getAdUnit('in_article');
+  if (!unit) {
     return <div className="article-body" dangerouslySetInnerHTML={{ __html: html }} />;
   }
 
@@ -19,7 +20,7 @@ export function ArticleBody({ html, adSlot }: { html: string; adSlot?: string })
   return (
     <>
       <div className="article-body" dangerouslySetInnerHTML={{ __html: before }} />
-      <AdSlot slot={adSlot} format="in-article" />
+      <AdSlotClient client={unit.client} slot={unit.slot} format="in-article" />
       <div className="article-body" dangerouslySetInnerHTML={{ __html: after }} />
     </>
   );

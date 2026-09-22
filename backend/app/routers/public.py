@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.config import settings
 from app.deps import DbSession
-from app.models import Category, Post, PostStatus, Subscriber, Tag, User
+from app.models import Category, Post, PostStatus, Setting, Subscriber, Tag, User
 from app.schemas import (
     AuthorPublic,
     CategoryWithCount,
@@ -228,6 +228,36 @@ def sitemap_data(db: DbSession) -> dict:
             for p in posts
         ],
     }
+
+
+# Settings the public site may read. Everything else in the table stays private.
+PUBLIC_SETTING_KEYS = (
+    "site_name",
+    "site_tagline",
+    "contact_email",
+    "adsense_client",
+    "adsense_slot_header",
+    "adsense_slot_in_feed",
+    "adsense_slot_in_article",
+    "adsense_slot_sidebar",
+    "adsense_slot_sidebar_2",
+    "adsense_slot_footer",
+    "adsense_auto_ads",
+    "ga_measurement_id",
+    "gsc_verification",
+    "twitter_handle",
+    "facebook_url",
+    "youtube_url",
+)
+
+
+@router.get("/settings/public")
+def public_settings(db: DbSession, response: Response) -> dict[str, str]:
+    """Values the admin panel's Settings page controls on the public site:
+    Search Console verification, GA4, AdSense IDs and social links."""
+    response.headers["Cache-Control"] = CACHE
+    stored = {s.key: s.value for s in db.query(Setting).filter(Setting.key.in_(PUBLIC_SETTING_KEYS)).all()}
+    return {key: (stored.get(key) or "").strip() for key in PUBLIC_SETTING_KEYS}
 
 
 @router.post("/subscribe", status_code=201)

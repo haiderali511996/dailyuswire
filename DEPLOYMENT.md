@@ -188,9 +188,9 @@ GitHub → your repo → **Settings** → **Secrets and variables** → **Action
 | `NEXT_PUBLIC_API_URL` | `https://api.yourdomain.com` |
 | `API_INTERNAL_URL` | `https://api.yourdomain.com` (optional — defaults to the value above) |
 | `CPANEL_SSH_PORT` | your SSH port — **not always 22**, see the table below |
-| `NEXT_PUBLIC_ADSENSE_CLIENT` | leave empty until AdSense approves you |
-| `NEXT_PUBLIC_GA_ID` | your GA4 ID, or leave empty |
-| `NEXT_PUBLIC_GSC_VERIFICATION` | your Search Console code, or leave empty |
+| `NEXT_PUBLIC_ADSENSE_CLIENT` | optional — Admin → Settings can set this later without a redeploy |
+| `NEXT_PUBLIC_GA_ID` | optional — same |
+| `NEXT_PUBLIC_GSC_VERIFICATION` | optional — same; paste the code in Admin → Settings → Analytics & verification instead |
 
 > **Either tab works.** The workflow reads each of these from Variables first and
 > falls back to Secrets, so if you already entered them as secrets the deploy

@@ -125,7 +125,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </div>
       )}
 
-      <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} format="leaderboard" className="mt-10" />
+      <AdSlot name="footer" format="leaderboard" className="mt-10" />
     </div>
   );
 }

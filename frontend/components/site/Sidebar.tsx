@@ -10,7 +10,7 @@ export async function Sidebar({ className = '' }: { className?: string }) {
 
   return (
     <aside className={`space-y-8 ${className}`}>
-      <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR} format="rectangle" className="!my-0" />
+      <AdSlot name="sidebar" format="rectangle" className="!my-0" />
 
       {trending.length > 0 && (
         <section aria-labelledby="trending-heading">
@@ -40,7 +40,7 @@ export async function Sidebar({ className = '' }: { className?: string }) {
         </Link>
       </section>
 
-      <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR_2} format="sidebar" className="!my-0" />
+      <AdSlot name="sidebar_2" format="sidebar" className="!my-0" />
     </aside>
   );
 }
