@@ -318,6 +318,27 @@ one by hand from Actions → *Deploy to cPanel* → *Run workflow*.
 Then **change your admin password** under Team, and delete or rewrite the eight
 starter articles.
 
+### SEO smoke test before you submit to Search Console
+
+Every one of these is generated from `SITE_URL` (backend `.env`) and
+`NEXT_PUBLIC_SITE_URL` (GitHub variable). If either is wrong you will see
+`localhost` or the API hostname where the site domain should be.
+
+1. `https://yourdomain.com/robots.txt` → lists both sitemaps under your domain
+2. `https://yourdomain.com/sitemap.xml` → every `<loc>` starts with `https://yourdomain.com/`
+3. `https://yourdomain.com/news-sitemap.xml` → dates end in `+00:00`
+4. `https://yourdomain.com/rss` → the channel `<link>` is `https://yourdomain.com/rss`, not the API host
+5. View source on any article: `<link rel="canonical">`, `og:url` and the
+   `mainEntityOfPage` in the JSON-LD all show the same `https://yourdomain.com/<section>/<slug>`
+6. `https://yourdomain.com/news/this-does-not-exist` → HTTP **404**, not 200
+   (check with `curl -I`); a wrong-section URL such as
+   `https://yourdomain.com/sports/<a-health-slug>` → HTTP **308** to the right section
+7. Paste an article URL into Google's Rich Results Test → `NewsArticle` and
+   `BreadcrumbList` detected with no errors
+
+Only then add the property in Search Console and submit `sitemap.xml` and
+`news-sitemap.xml`.
+
 ---
 
 ## Troubleshooting

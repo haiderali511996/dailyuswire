@@ -21,7 +21,7 @@ from app.schemas import (
     TagOut,
 )
 from app.services.posts import publish_due_posts
-from app.utils.seo import breadcrumbs, news_article
+from app.utils.seo import breadcrumbs, iso_utc, news_article
 from app.utils.text import strip_tags
 
 router = APIRouter(prefix="/api", tags=["public"])
@@ -221,8 +221,8 @@ def sitemap_data(db: DbSession) -> dict:
                 "slug": p.slug,
                 "title": p.title,
                 "category": p.category.slug if p.category else "news",
-                "published_at": p.published_at.isoformat() if p.published_at else None,
-                "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+                "published_at": iso_utc(p.published_at),
+                "updated_at": iso_utc(p.updated_at),
                 "cover_image": p.cover_image,
             }
             for p in posts

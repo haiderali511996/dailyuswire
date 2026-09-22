@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models import Post, PostImage, PostStatus, Tag
+from app.utils.seo import post_url
 from app.utils.text import (
     add_heading_ids,
     make_excerpt,
@@ -75,6 +76,11 @@ def apply_seo_defaults(post: Post) -> None:
         post.meta_description = (post.excerpt or make_excerpt(post.content))[:160]
     if not post.og_image:
         post.og_image = post.cover_image
+    # A canonical that just points at the article itself is stored blank: the
+    # front end derives the self-canonical from category + slug on every
+    # render, so a later slug or section change can never leave it stale.
+    if post.canonical_url and post.canonical_url == post_url(post):
+        post.canonical_url = ""
 
 
 def apply_status(post: Post, status: PostStatus | None, published_at: datetime | None) -> None:

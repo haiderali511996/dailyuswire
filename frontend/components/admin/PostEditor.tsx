@@ -170,6 +170,7 @@ export function PostEditor({ postId }: { postId?: number }) {
     () => categories.find((c) => c.id === form.category_id),
     [categories, form.category_id],
   );
+  const selfCanonical = `${SITE_URL}/${category?.slug ?? 'news'}/${form.slug || 'article-slug'}`;
 
   if (loading) return <p className="text-sm text-ink-muted">Loading article...</p>;
 
@@ -370,6 +371,19 @@ export function PostEditor({ postId }: { postId?: number }) {
                   placeholder="Leave blank unless this article is syndicated from elsewhere"
                   className="field"
                 />
+                <p className="hint">
+                  {form.canonical_url.trim() ? (
+                    <>
+                      Overrides the automatic canonical. Search engines will credit the address above instead
+                      of this page.
+                    </>
+                  ) : (
+                    <>
+                      Automatic: <span className="font-mono">{selfCanonical}</span>
+                      {' '}(also used for og:url, JSON-LD, RSS and the sitemaps).
+                    </>
+                  )}
+                </p>
               </div>
 
               <Toggle
@@ -567,6 +581,7 @@ export function PostEditor({ postId }: { postId?: number }) {
             focusKeyword={form.focus_keyword}
             content={form.content}
             coverImage={form.cover_image}
+            canonicalUrl={form.canonical_url}
           />
         </div>
       </div>

@@ -73,6 +73,10 @@ export interface Post extends PostCard {
   source_url: string;
   tags: Tag[];
   images: PostImage[];
+  /** Absolute permalink computed by the API: SITE_URL/<category>/<slug>. */
+  url?: string;
+  /** Effective canonical: `canonical_url` when set, otherwise `url`. */
+  canonical?: string;
 }
 
 export interface Paginated<T> {

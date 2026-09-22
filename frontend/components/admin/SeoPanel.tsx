@@ -15,6 +15,7 @@ interface Props {
   focusKeyword: string;
   content: string;
   coverImage: string;
+  canonicalUrl: string;
 }
 
 const GRADE_STYLES: Record<string, { ring: string; text: string; label: string }> = {
@@ -38,6 +39,9 @@ export function SeoPanel(props: Props) {
           content: props.content,
           focus_keyword: props.focusKeyword,
           cover_image: props.coverImage,
+          slug: props.slug,
+          category_slug: props.categorySlug,
+          canonical_url: props.canonicalUrl,
         })
         .then(setAnalysis)
         .catch(() => setAnalysis(null));
@@ -50,6 +54,9 @@ export function SeoPanel(props: Props) {
     props.content,
     props.focusKeyword,
     props.coverImage,
+    props.slug,
+    props.categorySlug,
+    props.canonicalUrl,
   ]);
 
   const previewTitle = props.metaTitle || props.title || 'Untitled article';

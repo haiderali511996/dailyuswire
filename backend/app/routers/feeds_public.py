@@ -11,6 +11,7 @@ from sqlalchemy.orm import joinedload
 from app.config import settings
 from app.deps import DbSession
 from app.models import Category, Post, PostStatus
+from app.utils.seo import post_url
 
 router = APIRouter(tags=["feeds"])
 
@@ -26,7 +27,7 @@ def _render(title: str, description: str, link: str, posts: list[Post]) -> Respo
     site = settings.site_url.rstrip("/")
     items = []
     for post in posts:
-        url = f"{site}/{post.category.slug if post.category else 'news'}/{post.slug}"
+        url = post_url(post)
         items.append(
             "<item>"
             f"<title>{escape(post.title)}</title>"
@@ -74,7 +75,7 @@ def rss(db: DbSession) -> Response:
     return _render(
         settings.site_name,
         settings.site_tagline,
-        f"{settings.api_url.rstrip('/')}/rss.xml",
+        f"{settings.site_url.rstrip('/')}/rss",
         _latest(db),
     )
 
@@ -87,6 +88,6 @@ def rss_category(db: DbSession, category_slug: str) -> Response:
     return _render(
         f"{settings.site_name} - {category.name}",
         category.description or f"{category.name} coverage from {settings.site_name}.",
-        f"{settings.api_url.rstrip('/')}/rss/{category_slug}.xml",
+        f"{settings.site_url.rstrip('/')}/rss/{category_slug}",
         _latest(db, category=category),
     )
