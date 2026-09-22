@@ -339,6 +339,38 @@ Every one of these is generated from `SITE_URL` (backend `.env`) and
 Only then add the property in Search Console and submit `sitemap.xml` and
 `news-sitemap.xml`.
 
+### If PageSpeed shows a slow "Speed Index" with blank first frames
+
+The code itself scores 95+ on mobile in Lighthouse against a local build. When the
+live site scores much lower and the filmstrip stays blank for several seconds, the
+time is being spent before the first byte, and on cPanel that is almost always
+Passenger starting the Node app from cold: it shuts the app down after a few idle
+minutes and the next visitor pays a multi-second boot. Check the "Initial server
+response time" audit in the PageSpeed report; anything over ~600 ms confirms it.
+
+Two things fix it:
+
+1. Keep one worker alive. Add to the `.htaccess` in the **domain's document
+   root** (the one cPanel wrote, below its own `# DO NOT REMOVE` block):
+
+   ```apache
+   PassengerMinInstances 1
+   ```
+
+   If the host has locked that directive, ask support to enable it for the
+   domain, or use step 2 alone.
+
+2. Warm it from a cron job. cPanel → **Cron Jobs**, every 5 minutes:
+
+   ```bash
+   curl -s -o /dev/null https://yourdomain.com/ ; curl -s -o /dev/null https://api.yourdomain.com/health
+   ```
+
+Also make sure `API_INTERNAL_URL` on the Node app points at the API over the
+server's own hostname if the host allows it; every server-rendered page makes
+several API calls, and going out through the public DNS name and back in is
+noticeably slower on shared hosting.
+
 ---
 
 ## Troubleshooting

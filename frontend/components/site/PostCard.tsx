@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { formatDate, timeAgo } from '@/lib/format';
+
+import { TimeAgo } from './TimeAgo';
 import { mediaUrl, postPath } from '@/lib/config';
 import type { PostCard as PostCardType } from '@/lib/types';
 
@@ -14,11 +16,19 @@ function cover(post: PostCardType) {
   return mediaUrl(post.cover_image) || PLACEHOLDER;
 }
 
-/** Hero: one large lead story. */
+/**
+ * Hero: one large lead story.
+ *
+ * The image link, the category chip, the headline link and the author link
+ * are siblings, never nested: an <a> inside an <a> is invalid HTML, the
+ * browser closes the outer one early, and React then finds a DOM that does
+ * not match what it rendered (error #418) and re-renders the whole page on
+ * the client.
+ */
 export function HeroCard({ post, priority = true }: { post: PostCardType; priority?: boolean }) {
   return (
     <article className="group relative overflow-hidden rounded-lg bg-navy-950">
-      <Link href={postPath(post)} className="block">
+      <Link href={postPath(post)} className="block" aria-label={post.title} tabIndex={-1}>
         <div className="relative aspect-video w-full">
           <Image
             src={cover(post)}
@@ -26,18 +36,25 @@ export function HeroCard({ post, priority = true }: { post: PostCardType; priori
             fill
             sizes="(max-width: 1024px) 100vw, 66vw"
             priority={priority}
+            // Next 16 no longer implies this from `priority`; without it the
+            // preload and the request itself run at default priority behind
+            // fonts and scripts, which is exactly what PageSpeed's
+            // "LCP request discovery" flags.
+            fetchPriority={priority ? 'high' : undefined}
             className="object-cover opacity-85 transition duration-500 group-hover:scale-[1.03] group-hover:opacity-95"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/55 to-transparent" />
         </div>
-        <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 lg:p-8">
-          {post.category && <CategoryChip category={post.category} onDark />}
-          <h2 className="mt-3 font-serif text-2xl font-bold leading-tight text-white sm:text-3xl lg:text-[2.6rem] lg:leading-[1.1]">
-            {post.title}
-          </h2>
-          <Meta post={post} onDark className="mt-3" />
-        </div>
       </Link>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 sm:p-6 lg:p-8 [&_a]:pointer-events-auto">
+        {post.category && <CategoryChip category={post.category} onDark />}
+        <h2 className="mt-3 font-serif text-2xl font-bold leading-tight text-white sm:text-3xl lg:text-[2.6rem] lg:leading-[1.1]">
+          <Link href={postPath(post)} className="transition group-hover:text-navy-100">
+            {post.title}
+          </Link>
+        </h2>
+        <Meta post={post} onDark className="mt-3" />
+      </div>
     </article>
   );
 }
@@ -105,15 +122,22 @@ export function ListCard({
         </h3>
         <p className="mt-1 text-xs text-ink-faint">
           {post.category?.name ? `${post.category.name} · ` : ''}
-          {timeAgo(post.published_at)}
+          <TimeAgo value={post.published_at} initial={timeAgo(post.published_at)} />
         </p>
       </div>
     </article>
   );
 }
 
-/** Wide card used as the first item of a category page. */
-export function FeatureCard({ post }: { post: PostCardType }) {
+/**
+ * Wide card used as the first item of a category page.
+ *
+ * `priority` only where the card is the first thing on screen (the category
+ * page lead). On the home page these sit below the hero, and preloading eight
+ * of them with fetchpriority=high starves the actual LCP image on slow mobile
+ * connections.
+ */
+export function FeatureCard({ post, priority = false }: { post: PostCardType; priority?: boolean }) {
   return (
     <article className="group grid gap-4 sm:grid-cols-2 sm:gap-6">
       <Link href={postPath(post)} className="relative block aspect-video w-full overflow-hidden rounded-md bg-wash">
@@ -122,7 +146,8 @@ export function FeatureCard({ post }: { post: PostCardType }) {
           alt={post.cover_alt || post.title}
           fill
           sizes="(max-width: 640px) 100vw, 50vw"
-          priority
+          priority={priority}
+          fetchPriority={priority ? 'high' : undefined}
           className="object-cover transition duration-500 group-hover:scale-[1.04]"
         />
       </Link>

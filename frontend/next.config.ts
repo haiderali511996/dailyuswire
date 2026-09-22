@@ -69,6 +69,12 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  experimental: {
+    // The whole stylesheet is ~9 KiB. Inlining it removes the one
+    // render-blocking request on first paint, which on a slow 4G phone is
+    // worth more than caching the file across pages.
+    inlineCss: true,
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [360, 420, 640, 768, 1024, 1280, 1536],
