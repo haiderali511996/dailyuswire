@@ -238,12 +238,15 @@ def get_settings_map(db: DbSession, user: CurrentUser) -> dict[str, str]:
 
 
 @router.put("/settings")
-def put_settings(db: DbSession, user: AdminUser, payload: list[SettingIn]) -> dict[str, str]:
+async def put_settings(db: DbSession, user: AdminUser, payload: list[SettingIn]) -> dict[str, str]:
     for item in payload:
         setting = db.get(Setting, item.key)
         if setting:
-            setting.value = item.value
+            setting.value = item.value.strip()
         else:
-            db.add(Setting(key=item.key, value=item.value))
+            db.add(Setting(key=item.key, value=item.value.strip()))
     db.commit()
+    # The public site bakes these into every page's <head> (verification tag,
+    # analytics, ad units), so expire the cached fetch and the root layout.
+    await revalidate_frontend(["/"], tags=["settings"])
     return {s.key: s.value for s in db.query(Setting).all()}

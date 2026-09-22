@@ -168,7 +168,7 @@ export default async function ArticlePage({ params }: Props) {
             <TableOfContents />
 
             <div className="mt-6">
-              <ArticleBody html={post.content} adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_IN_ARTICLE} />
+              <ArticleBody html={post.content} />
             </div>
 
             {post.source_url && (
@@ -205,7 +205,7 @@ export default async function ArticlePage({ params }: Props) {
               <ShareBar url={url} title={post.title} />
             </div>
 
-            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} format="rectangle" />
+            <AdSlot name="footer" format="rectangle" />
 
             {related.length > 0 && (
               <section className="mt-12" aria-labelledby="related-heading">
@@ -223,7 +223,7 @@ export default async function ArticlePage({ params }: Props) {
           </article>
 
           <aside className="space-y-8">
-            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR} format="rectangle" className="!my-0" />
+            <AdSlot name="sidebar" format="rectangle" className="!my-0" />
             {trending.length > 0 && (
               <section aria-labelledby="trending-aside">
                 <h2 id="trending-aside" className="rule-top pt-2 font-serif text-lg font-bold uppercase text-navy-900">
@@ -239,7 +239,7 @@ export default async function ArticlePage({ params }: Props) {
               </section>
             )}
             <div className="lg:sticky lg:top-40">
-              <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR_2} format="sidebar" className="!my-0" />
+              <AdSlot name="sidebar_2" format="sidebar" className="!my-0" />
             </div>
           </aside>
         </div>

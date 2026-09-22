@@ -54,7 +54,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_HEADER} format="leaderboard" className="mt-8" />
+      <AdSlot name="header" format="leaderboard" className="mt-8" />
 
       {/* Main river + sidebar */}
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -142,7 +142,7 @@ async function CategoryBlock({
         )}
       </div>
       {index === 1 && (
-        <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_IN_FEED} format="leaderboard" className="mt-10" />
+        <AdSlot name="in_feed" format="leaderboard" className="mt-10" />
       )}
     </section>
   );

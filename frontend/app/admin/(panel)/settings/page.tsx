@@ -27,12 +27,15 @@ const GROUPS: { title: string; blurb: string; fields: Field[] }[] = [
   },
   {
     title: 'Google AdSense',
-    blurb: 'Leave the publisher ID blank until your AdSense application is approved - ad slots render nothing without it.',
+    blurb: 'Leave the publisher ID blank until your AdSense application is approved - ad slots render nothing without it. Changes go live on the site within a minute of saving.',
     fields: [
       { key: 'adsense_client', label: 'Publisher ID', placeholder: 'ca-pub-0000000000000000', hint: 'Find it in AdSense under Account → Settings.' },
-      { key: 'adsense_slot_header', label: 'Header leaderboard slot ID', placeholder: '1234567890' },
+      { key: 'adsense_slot_header', label: 'Home page leaderboard slot ID', placeholder: '1234567890', hint: 'Below the lead stories on the home page.' },
+      { key: 'adsense_slot_in_feed', label: 'Home page in-feed slot ID', placeholder: '1234567890', hint: 'Between the section blocks on the home page.' },
       { key: 'adsense_slot_in_article', label: 'In-article slot ID', placeholder: '1234567890', hint: 'Dropped automatically after the third paragraph.' },
+      { key: 'adsense_slot_footer', label: 'End-of-article slot ID', placeholder: '1234567890', hint: 'After the article body and on section pages.' },
       { key: 'adsense_slot_sidebar', label: 'Sidebar slot ID', placeholder: '1234567890' },
+      { key: 'adsense_slot_sidebar_2', label: 'Sidebar sticky slot ID', placeholder: '1234567890', hint: 'The tall unit that stays in view while scrolling.' },
     ],
   },
   {
@@ -40,7 +43,7 @@ const GROUPS: { title: string; blurb: string; fields: Field[] }[] = [
     blurb: 'Connect Search Console and Analytics to track indexing and traffic.',
     fields: [
       { key: 'ga_measurement_id', label: 'GA4 measurement ID', placeholder: 'G-XXXXXXXXXX' },
-      { key: 'gsc_verification', label: 'Search Console verification code', hint: 'The content value from the HTML tag method.' },
+      { key: 'gsc_verification', label: 'Search Console verification code', hint: 'The content value from the HTML tag method, e.g. AbC123... - not the whole <meta> tag. Live on the site within a minute of saving.' },
     ],
   },
   {

@@ -119,13 +119,15 @@ Brings up Postgres, the API and the front end together.
 | `ADMIN_PASSWORD` | backend | Change it from the default before first boot. |
 | `SITE_URL` | both | Public URL; drives canonicals, sitemaps and JSON-LD. |
 | `REVALIDATE_SECRET` | both | Must match on both sides or ISR will not refresh. |
-| `NEXT_PUBLIC_ADSENSE_CLIENT` | frontend | `ca-pub-…`. Ad slots render nothing until this is set. |
-| `NEXT_PUBLIC_ADSENSE_SLOT_*` | frontend | Slot IDs for header, in-article, sidebar, footer. |
-| `NEXT_PUBLIC_GA_ID` | frontend | GA4 `G-…`. |
-| `NEXT_PUBLIC_GSC_VERIFICATION` | frontend | Search Console HTML-tag verification. |
+| `NEXT_PUBLIC_ADSENSE_CLIENT` | frontend | `ca-pub-…`. Optional: the admin panel's Settings page overrides it. |
+| `NEXT_PUBLIC_ADSENSE_SLOT_*` | frontend | Slot IDs for header, in-feed, in-article, sidebar, sidebar_2, footer. Optional, same override. |
+| `NEXT_PUBLIC_GA_ID` | frontend | GA4 `G-…`. Optional, same override. |
+| `NEXT_PUBLIC_GSC_VERIFICATION` | frontend | Search Console HTML-tag verification. Optional, same override. |
 
-Ad slots and analytics stay completely inert while their variables are blank, so the site is
-clean while your application is pending.
+AdSense, GA4, the Search Console code and the social links can all be set from **Admin →
+Settings** without a redeploy; a saved value wins over the variable, a blank one falls back to it.
+Ad slots and analytics stay completely inert while both are blank, so the site is clean while
+your application is pending.
 
 ### Media storage
 

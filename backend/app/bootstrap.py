@@ -90,8 +90,11 @@ DEFAULT_SETTINGS: dict[str, str] = {
     "site_tagline": settings.site_tagline,
     "adsense_client": "",          # ca-pub-XXXXXXXXXXXXXXXX
     "adsense_slot_header": "",
+    "adsense_slot_in_feed": "",
     "adsense_slot_in_article": "",
     "adsense_slot_sidebar": "",
+    "adsense_slot_sidebar_2": "",
+    "adsense_slot_footer": "",
     "adsense_auto_ads": "false",
     "ga_measurement_id": "",       # G-XXXXXXX
     "gsc_verification": "",

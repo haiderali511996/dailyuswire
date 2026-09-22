@@ -28,6 +28,9 @@ export async function POST(request: Request): Promise<NextResponse> {
   // 'max' expires the tag immediately on the next request (Next 16 signature).
   for (const tag of tags) revalidateTag(tag, 'max');
   for (const path of paths) revalidatePath(path);
+  // Admin settings (verification tag, analytics, ad units) are rendered by the
+  // root layout on every page, so a settings change must purge all of them.
+  if (tags.includes('settings')) revalidatePath('/', 'layout');
   revalidatePath('/sitemap.xml');
   revalidatePath('/news-sitemap.xml');
 

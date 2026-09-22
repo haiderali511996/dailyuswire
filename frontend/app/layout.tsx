@@ -3,14 +3,8 @@ import { Playfair_Display, Source_Sans_3 } from 'next/font/google';
 
 import { Analytics } from '@/components/site/Analytics';
 import { JsonLd } from '@/components/site/JsonLd';
-import {
-  API_URL,
-  GSC_VERIFICATION,
-  SITE_DESCRIPTION,
-  SITE_NAME,
-  SITE_URL,
-  TWITTER_HANDLE,
-} from '@/lib/config';
+import { API_URL, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/config';
+import { getSiteSettings } from '@/lib/site-settings';
 
 import './globals.css';
 
@@ -30,64 +24,72 @@ const body = Source_Sans_3({
   fallback: ['system-ui', 'Segoe UI', 'sans-serif'],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: `${SITE_NAME} - Breaking US News, Health, Sports, Crypto & Business`,
-    template: `%s | ${SITE_NAME}`,
-  },
-  description: SITE_DESCRIPTION,
-  applicationName: SITE_NAME,
-  keywords: [
-    'US news', 'breaking news', 'health news', 'sports news', 'entertainment news',
-    'crypto news', 'business news', 'lifestyle', 'digital marketing',
-  ],
-  authors: [{ name: SITE_NAME, url: SITE_URL }],
-  publisher: SITE_NAME,
-  alternates: {
-    canonical: '/',
-    types: { 'application/rss+xml': [{ url: '/rss', title: `${SITE_NAME} RSS Feed` }] },
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} - Breaking US News & Analysis`,
+/**
+ * Site-wide metadata. The Search Console verification code and the X handle
+ * come from the admin panel (Settings -> Analytics & verification / Social),
+ * falling back to the NEXT_PUBLIC_* variables baked in at build time.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteSettings();
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: `${SITE_NAME} - Breaking US News, Health, Sports, Crypto & Business`,
+      template: `%s | ${SITE_NAME}`,
+    },
     description: SITE_DESCRIPTION,
-    images: [{ url: '/logo.png', width: 900, height: 210, alt: SITE_NAME }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    site: TWITTER_HANDLE,
-    creator: TWITTER_HANDLE,
-    title: `${SITE_NAME} - Breaking US News & Analysis`,
-    description: SITE_DESCRIPTION,
-    images: ['/logo.png'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    applicationName: SITE_NAME,
+    keywords: [
+      'US news', 'breaking news', 'health news', 'sports news', 'entertainment news',
+      'crypto news', 'business news', 'lifestyle', 'digital marketing',
+    ],
+    authors: [{ name: SITE_NAME, url: SITE_URL }],
+    publisher: SITE_NAME,
+    alternates: {
+      canonical: '/',
+      types: { 'application/rss+xml': [{ url: '/rss', title: `${SITE_NAME} RSS Feed` }] },
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'en_US',
+      url: SITE_URL,
+      siteName: SITE_NAME,
+      title: `${SITE_NAME} - Breaking US News & Analysis`,
+      description: SITE_DESCRIPTION,
+      images: [{ url: '/logo.png', width: 900, height: 210, alt: SITE_NAME }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      site: s.twitter_handle,
+      creator: s.twitter_handle,
+      title: `${SITE_NAME} - Breaking US News & Analysis`,
+      description: SITE_DESCRIPTION,
+      images: ['/logo.png'],
+    },
+    robots: {
       index: true,
       follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-      'max-video-preview': -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
     },
-  },
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: '48x48' },
-      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
-      { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
-    ],
-    apple: [{ url: '/apple-icon.png', sizes: '180x180' }],
-  },
-  manifest: '/manifest.webmanifest',
-  verification: GSC_VERIFICATION ? { google: GSC_VERIFICATION } : undefined,
-  category: 'news',
-};
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: '48x48' },
+        { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+        { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
+      ],
+      apple: [{ url: '/apple-icon.png', sizes: '180x180' }],
+    },
+    manifest: '/manifest.webmanifest',
+    verification: s.gsc_verification ? { google: s.gsc_verification } : undefined,
+    category: 'news',
+  };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -123,7 +125,8 @@ const SITE_SCHEMA = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const s = await getSiteSettings();
   return (
     <html lang="en-US" className={`${display.variable} ${body.variable}`}>
       <head>
@@ -132,7 +135,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="flex min-h-screen flex-col">
         {children}
-        <Analytics />
+        <Analytics adsenseClient={s.adsense_client} gaId={s.ga_measurement_id} />
       </body>
     </html>
   );
