@@ -427,3 +427,31 @@ jobs:
           [ "$site" = "200" ] || { echo "::error::Site did not return 200"; exit 1; }
 
           echo "Deployment verified."
+
+      # Search Console reports "Couldn't fetch" without saying why. Fetch the
+      # SEO files the way Googlebot does and print what comes back, so the
+      # answer is in this log.
+      - name: Check robots.txt and sitemaps
+        env:
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
+        run: |
+          set -uo pipefail
+          UA='Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+          fail=0
+          for path in robots.txt sitemap.xml news-sitemap.xml; do
+            url="$SITE_URL/$path"
+            code=$(curl -sS -A "$UA" -o body.txt -D headers.txt -w '%{http_code} %{content_type} %{time_total}s' --max-time 60 "$url") || code="000"
+            echo "==> $url -> $code"
+            grep -iE '^(location|server|cf-|x-litespeed|cache-control):' headers.txt || true
+            case "$path" in
+              robots.txt) cat body.txt ;;
+              *)
+                echo "    <loc> URLs: $(grep -o '<loc>' body.txt | wc -l)"
+                head -c 600 body.txt; echo
+                grep -q '<urlset' body.txt || { echo "::error::$url did not return a sitemap"; fail=1; }
+                ;;
+            esac
+            case "$code" in 200*) : ;; *) echo "::error::$url returned $code"; fail=1 ;; esac
+            echo
+          done
+          exit $fail
