@@ -3,7 +3,10 @@ import type { MetadataRoute } from 'next';
 import { getSitemapData } from '@/lib/api';
 import { SITE_URL } from '@/lib/config';
 
-export const revalidate = 900;
+// Rendered per request (the API call itself is cached for 15 minutes) so a
+// build that ran while the API was unreachable can never freeze a sitemap
+// holding only the static pages.
+export const dynamic = 'force-dynamic';
 
 const STATIC_PAGES: { path: string; priority: number; freq: MetadataRoute.Sitemap[0]['changeFrequency'] }[] = [
   { path: '/', priority: 1.0, freq: 'hourly' },
@@ -28,10 +31,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (!data) return entries;
 
+  const stamp = (value?: string | null) => (value ? new Date(value) : now);
+
   for (const category of data.categories) {
     entries.push({
       url: `${SITE_URL}/${category.slug}`,
-      lastModified: now,
+      lastModified: stamp(category.lastmod),
       changeFrequency: 'hourly',
       priority: 0.9,
     });
@@ -40,9 +45,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const author of data.authors) {
     entries.push({
       url: `${SITE_URL}/author/${author.slug}`,
-      lastModified: now,
+      lastModified: stamp(author.lastmod),
       changeFrequency: 'weekly',
       priority: 0.4,
+    });
+  }
+
+  for (const tag of data.tags ?? []) {
+    entries.push({
+      url: `${SITE_URL}/tag/${encodeURIComponent(tag.slug)}`,
+      lastModified: stamp(tag.lastmod),
+      changeFrequency: 'daily',
+      priority: 0.5,
     });
   }
 

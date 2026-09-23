@@ -92,8 +92,9 @@ export async function getAuthor(slug: string) {
 export interface SitemapData {
   site_url: string;
   site_name: string;
-  categories: { slug: string; name: string }[];
-  authors: { slug: string }[];
+  categories: { slug: string; name: string; lastmod?: string | null }[];
+  authors: { slug: string; lastmod?: string | null }[];
+  tags?: { slug: string; lastmod?: string | null }[];
   posts: {
     slug: string;
     title: string;

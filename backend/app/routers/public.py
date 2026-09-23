@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import func, or_
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.config import settings
 from app.deps import DbSession
@@ -197,25 +197,47 @@ def list_tags(db: DbSession, limit: int = Query(40, ge=1, le=200)) -> list[Tag]:
 
 @router.get("/sitemap-data")
 def sitemap_data(db: DbSession) -> dict:
-    """Everything Next.js needs to build sitemap.xml and news-sitemap.xml."""
+    """Everything Next.js needs to build sitemap.xml and news-sitemap.xml.
+
+    Every indexable URL on the site is listed here: all published posts,
+    categories, and the author and tag pages that actually have stories (the
+    front end answers 404 for an empty tag, so listing it would only earn a
+    crawl error).
+    """
     posts = (
         _published(db)
         .filter(Post.no_index.is_(False))
-        .options(joinedload(Post.category))
+        .options(selectinload(Post.tags))
         .order_by(Post.published_at.desc())
-        .limit(5000)
+        # One sitemap file holds at most 50,000 URLs; leave room for the
+        # category, author, tag and static pages that share it.
+        .limit(45000)
         .all()
     )
+
+    latest_by_category: dict[str, datetime] = {}
+    latest_by_author: dict[str, datetime] = {}
+    latest_by_tag: dict[str, datetime] = {}
+    for p in posts:
+        stamp = p.updated_at or p.published_at
+        if p.category:
+            latest_by_category.setdefault(p.category.slug, stamp)
+        if p.author and p.author.is_active:
+            latest_by_author.setdefault(p.author.slug, stamp)
+        for t in p.tags:
+            latest_by_tag.setdefault(t.slug, stamp)
+
     return {
         "site_url": settings.site_url.rstrip("/"),
         "site_name": settings.site_name,
         "categories": [
-            {"slug": c.slug, "name": c.name}
+            {"slug": c.slug, "name": c.name, "lastmod": iso_utc(latest_by_category.get(c.slug))}
             for c in db.query(Category).filter(Category.is_active.is_(True)).all()
         ],
         "authors": [
-            {"slug": u.slug} for u in db.query(User).filter(User.is_active.is_(True)).all()
+            {"slug": slug, "lastmod": iso_utc(stamp)} for slug, stamp in latest_by_author.items()
         ],
+        "tags": [{"slug": slug, "lastmod": iso_utc(stamp)} for slug, stamp in latest_by_tag.items()],
         "posts": [
             {
                 "slug": p.slug,
