@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { getSitemapData } from '@/lib/api';
-import { SITE_URL } from '@/lib/config';
+import { SITE_URL, absoluteMediaUrl } from '@/lib/config';
 
 // Rendered per request (the API call itself is cached for 15 minutes) so a
 // build that ran while the API was unreachable can never freeze a sitemap
@@ -69,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // Fresh news deserves a higher crawl priority than the archive.
       changeFrequency: ageDays < 2 ? 'hourly' : ageDays < 30 ? 'daily' : 'monthly',
       priority: ageDays < 2 ? 0.9 : ageDays < 30 ? 0.7 : 0.5,
-      images: post.cover_image ? [post.cover_image] : undefined,
+      images: post.cover_image ? [absoluteMediaUrl(post.cover_image)] : undefined,
     });
   }
 

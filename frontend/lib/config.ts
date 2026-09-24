@@ -48,6 +48,15 @@ export function mediaUrl(url: string | null | undefined): string {
   return url.startsWith('/') ? url : `/${url}`;
 }
 
+/**
+ * Resolve an image reference to a fully qualified URL, for places a relative
+ * path is invalid - sitemaps, feeds and structured data.
+ */
+export function absoluteMediaUrl(url: string | null | undefined): string {
+  const resolved = mediaUrl(url);
+  return resolved.startsWith('/') ? absoluteUrl(resolved) : resolved;
+}
+
 export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
