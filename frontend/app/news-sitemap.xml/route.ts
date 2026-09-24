@@ -1,5 +1,5 @@
 import { getSitemapData } from '@/lib/api';
-import { SITE_URL } from '@/lib/config';
+import { SITE_URL, absoluteMediaUrl } from '@/lib/config';
 
 export const revalidate = 300;
 
@@ -30,7 +30,7 @@ export async function GET(): Promise<Response> {
       <news:publication_date>${post.published_at}</news:publication_date>
       <news:title>${escapeXml(post.title)}</news:title>
     </news:news>${post.cover_image ? `
-    <image:image><image:loc>${escapeXml(post.cover_image)}</image:loc></image:image>` : ''}
+    <image:image><image:loc>${escapeXml(absoluteMediaUrl(post.cover_image))}</image:loc></image:image>` : ''}
   </url>`,
     )
     .join('\n  ');
