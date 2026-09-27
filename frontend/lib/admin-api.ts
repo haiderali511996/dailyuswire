@@ -8,6 +8,7 @@ import type {
   MediaItem,
   Paginated,
   Post,
+  PostStatus,
   SeoAnalysis,
   User,
 } from './types';
@@ -94,6 +95,8 @@ export const adminApi = {
   me: () => request<User>('/api/auth/me'),
 
   stats: () => request<DashboardStats>('/api/admin/stats'),
+
+  postCounts: () => request<Record<PostStatus | 'all', number>>('/api/admin/posts/counts'),
 
   listPosts: (params: Record<string, string | number | undefined> = {}) => {
     const qs = new URLSearchParams();

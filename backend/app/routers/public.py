@@ -119,6 +119,7 @@ def trending(db: DbSession, response: Response, limit: int = Query(6, ge=1, le=2
 
 @router.get("/posts/{slug}", response_model=PostOut)
 def get_post(db: DbSession, slug: str, response: Response) -> Post:
+    publish_due_posts(db)
     post = (
         _published(db)
         .options(joinedload(Post.tags), joinedload(Post.images))
