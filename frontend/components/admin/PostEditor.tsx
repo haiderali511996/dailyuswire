@@ -76,6 +76,7 @@ export function PostEditor({ postId }: { postId?: number }) {
   const [tagInput, setTagInput] = useState('');
   const [slugTouched, setSlugTouched] = useState(Boolean(postId));
 
+  const scheduleInputRef = useRef<HTMLInputElement>(null);
   const editorInsertRef = useRef<((url: string, alt: string) => void) | null>(null);
   const [editorPicking, setEditorPicking] = useState(false);
 
@@ -128,10 +129,17 @@ export function PostEditor({ postId }: { postId?: number }) {
         return;
       }
     }
-    if (status === 'scheduled' && !form.published_at) {
-      push('error', 'Choose a publish date and time to schedule this article.');
-      setTab('settings');
-      return;
+    if (status === 'scheduled') {
+      if (!form.published_at) {
+        push('error', 'Choose a publish date and time to schedule this article.');
+        scheduleInputRef.current?.focus();
+        return;
+      }
+      if (new Date(form.published_at).getTime() <= Date.now()) {
+        push('error', 'The publish time is in the past. Pick a future date, or click Publish to go live now.');
+        scheduleInputRef.current?.focus();
+        return;
+      }
     }
 
     setSaving(true);
@@ -146,10 +154,10 @@ export function PostEditor({ postId }: { postId?: number }) {
       if (postId) {
         const updated = await adminApi.updatePost(postId, payload);
         setForm(toForm(updated));
-        push('success', status === 'published' ? 'Article published.' : 'Changes saved.');
+        push('success', savedMessage(status, form.published_at, 'Changes saved.'));
       } else {
         const created = await adminApi.createPost(payload);
-        push('success', status === 'published' ? 'Article published.' : 'Draft saved.');
+        push('success', savedMessage(status, form.published_at, 'Draft saved.'));
         router.push(`/admin/posts/${created.id}`);
       }
     } catch (e) {
@@ -184,6 +192,9 @@ export function PostEditor({ postId }: { postId?: number }) {
           </h1>
           <p className="truncate text-xs text-ink-faint">
             <StatusBadge status={form.status} />
+            {form.status === 'scheduled' && form.published_at && (
+              <span className="ml-2">goes live {new Date(form.published_at).toLocaleString()}</span>
+            )}
             {form.slug && (
               <span className="ml-2">
                 /{category?.slug ?? 'news'}/{form.slug}
@@ -206,15 +217,29 @@ export function PostEditor({ postId }: { postId?: number }) {
             Save draft
           </button>
           {form.status !== 'published' && (
-            <button
-              type="button"
-              onClick={() => save('scheduled')}
-              disabled={saving || !form.published_at}
-              className="btn-ghost btn-sm"
-              title={form.published_at ? 'Schedule' : 'Set a publish date in Settings first'}
-            >
-              Schedule
-            </button>
+            <div className="flex items-center gap-1 rounded-md border border-rule bg-wash px-2 py-1">
+              <label htmlFor="schedule-at" className="text-2xs font-semibold uppercase tracking-wide text-ink-faint">
+                Publish on
+              </label>
+              <input
+                ref={scheduleInputRef}
+                id="schedule-at"
+                type="datetime-local"
+                value={form.published_at}
+                min={toDatetimeLocal(new Date().toISOString())}
+                onChange={(e) => set('published_at', e.target.value)}
+                className="rounded border border-rule bg-white px-1.5 py-0.5 text-xs"
+              />
+              <button
+                type="button"
+                onClick={() => save('scheduled')}
+                disabled={saving}
+                className="btn-ghost btn-sm"
+                title="Publish automatically at the chosen date and time"
+              >
+                Schedule
+              </button>
+            </div>
           )}
           <button
             type="button"
@@ -635,6 +660,15 @@ function toForm(post: Post): FormState {
     source_url: post.source_url,
     tags: post.tags.map((t) => t.name),
   };
+}
+
+function savedMessage(status: PostStatus, publishedAt: string, fallback: string): string {
+  if (status === 'published') return 'Article published.';
+  if (status === 'scheduled' && publishedAt) {
+    return `Scheduled for ${new Date(publishedAt).toLocaleString()}.`;
+  }
+  if (status === 'draft') return 'Draft saved.';
+  return fallback;
 }
 
 export function StatusBadge({ status }: { status: PostStatus }) {

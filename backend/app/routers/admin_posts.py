@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentUser, DbSession, can_edit_post
@@ -18,6 +18,7 @@ from app.services.posts import (
     apply_seo_defaults,
     apply_status,
     ensure_slug,
+    publish_due_posts,
     resolve_tags,
     revalidate_frontend,
     sync_images,
@@ -44,6 +45,20 @@ def _paths_for(post: Post) -> list[str]:
     return ["/", f"/{cat}", f"/{cat}/{post.slug}", "/sitemap.xml"]
 
 
+@router.get("/counts")
+def status_counts(db: DbSession, user: CurrentUser) -> dict[str, int]:
+    """Per-status totals for the tabs on the articles list."""
+    publish_due_posts(db)
+    query = db.query(Post.status, func.count(Post.id))
+    if user.role == Role.author:
+        query = query.filter(Post.author_id == user.id)
+    counts = {status.value: 0 for status in PostStatus}
+    for status, count in query.group_by(Post.status).all():
+        counts[status.value] = count
+    counts["all"] = sum(counts.values())
+    return counts
+
+
 @router.get("", response_model=AdminPaginated)
 def list_posts(
     db: DbSession,
@@ -54,6 +69,8 @@ def list_posts(
     category_id: int | None = None,
     q: str | None = None,
 ) -> AdminPaginated:
+    # Keep the Scheduled tab honest: anything whose time has passed is live.
+    publish_due_posts(db)
     query = db.query(Post).options(
         joinedload(Post.category), joinedload(Post.author), joinedload(Post.tags), joinedload(Post.images)
     )

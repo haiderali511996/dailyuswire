@@ -10,6 +10,16 @@ import { adminApi } from '@/lib/admin-api';
 import { formatDateTime, timeAgo } from '@/lib/format';
 import type { Category, Paginated, Post, PostStatus } from '@/lib/types';
 
+type StatusTab = PostStatus | '';
+
+const TABS: { key: StatusTab; label: string; count: PostStatus | 'all' }[] = [
+  { key: '', label: 'All', count: 'all' },
+  { key: 'published', label: 'Published', count: 'published' },
+  { key: 'draft', label: 'Drafts', count: 'draft' },
+  { key: 'scheduled', label: 'Scheduled', count: 'scheduled' },
+  { key: 'archived', label: 'Archived', count: 'archived' },
+];
+
 export default function PostsPage() {
   return (
     <Suspense fallback={<p className="text-sm text-ink-muted">Loading...</p>}>
@@ -26,7 +36,8 @@ function PostsList() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<PostStatus | ''>((params.get('status') as PostStatus) ?? '');
+  const [status, setStatus] = useState<StatusTab>((params.get('status') as PostStatus) ?? '');
+  const [counts, setCounts] = useState<Record<PostStatus | 'all', number> | null>(null);
   const [categoryId, setCategoryId] = useState<string>('');
   const [q, setQ] = useState('');
 
@@ -45,6 +56,7 @@ function PostsList() {
 
   const load = useCallback(() => {
     setLoading(true);
+    adminApi.postCounts().then(setCounts).catch(() => {});
     adminApi
       .listPosts({ page, status: status || undefined, category_id: categoryId || undefined, q: q || undefined })
       .then(setData)
@@ -66,6 +78,15 @@ function PostsList() {
     } catch (e) {
       push('error', e instanceof Error ? e.message : 'Delete failed');
     }
+  }
+
+  function selectTab(next: StatusTab) {
+    setPage(1);
+    setStatus(next);
+    const url = new URL(window.location.href);
+    if (next) url.searchParams.set('status', next);
+    else url.searchParams.delete('status');
+    window.history.replaceState(null, '', url);
   }
 
   async function toggleStatus(post: Post) {
@@ -91,6 +112,28 @@ function PostsList() {
         </Link>
       </div>
 
+      <div role="tablist" aria-label="Filter by status" className="flex gap-1 overflow-x-auto border-b border-rule">
+        {TABS.map((t) => (
+          <button
+            key={t.key || 'all'}
+            type="button"
+            role="tab"
+            aria-selected={status === t.key}
+            onClick={() => selectTab(t.key)}
+            className={`-mb-px whitespace-nowrap border-b-2 px-4 py-2 text-sm font-semibold transition ${
+              status === t.key ? 'border-flag-600 text-flag-600' : 'border-transparent text-ink-muted hover:text-navy-900'
+            }`}
+          >
+            {t.label}
+            {counts && (
+              <span className="ml-1.5 rounded bg-wash px-1.5 py-0.5 text-2xs tabular-nums text-ink-faint">
+                {counts[t.count] ?? 0}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
       <div className="card flex flex-wrap gap-3 p-3">
         <input
           value={q}
@@ -101,20 +144,6 @@ function PostsList() {
           placeholder="Search headlines..."
           className="field min-w-[12rem] flex-1"
         />
-        <select
-          value={status}
-          onChange={(e) => {
-            setPage(1);
-            setStatus(e.target.value as PostStatus | '');
-          }}
-          className="field w-auto"
-        >
-          <option value="">All statuses</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-          <option value="scheduled">Scheduled</option>
-          <option value="archived">Archived</option>
-        </select>
         <select
           value={categoryId}
           onChange={(e) => {
@@ -136,7 +165,13 @@ function PostsList() {
 
       {!loading && data && data.items.length === 0 && (
         <div className="card p-10 text-center">
-          <p className="text-sm text-ink-muted">No articles match these filters.</p>
+          <p className="text-sm text-ink-muted">
+            {status === 'draft'
+              ? 'No drafts yet. Use "Save draft" in the editor to keep work in progress here.'
+              : status === 'scheduled'
+                ? 'Nothing scheduled. Set a publish date in the editor and click "Schedule".'
+                : 'No articles match these filters.'}
+          </p>
           <Link href="/admin/posts/new" className="btn-primary btn-sm mt-4">
             Write a new article
           </Link>
@@ -174,7 +209,7 @@ function PostsList() {
                       <StatusBadge status={post.status} />
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-xs text-ink-faint">
-                      {post.published_at ? formatDateTime(post.published_at) : `edited ${timeAgo(post.updated_at)}`}
+                      {postDate(post)}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-ink-muted">{post.views}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
@@ -207,7 +242,7 @@ function PostsList() {
                 </div>
                 <p className="mt-1 text-xs text-ink-faint">
                   {post.category?.name ?? '—'} · {post.views} views ·{' '}
-                  {post.published_at ? formatDateTime(post.published_at) : `edited ${timeAgo(post.updated_at)}`}
+                  {postDate(post)}
                 </p>
                 <div className="mt-3 flex gap-2">
                   <Link href={`/admin/posts/${post.id}`} className="btn-ghost btn-sm flex-1">
@@ -250,4 +285,10 @@ function PostsList() {
       )}
     </div>
   );
+}
+
+function postDate(post: Post): string {
+  if (post.status === 'scheduled' && post.published_at) return `Publishes ${formatDateTime(post.published_at)}`;
+  if (post.status === 'draft') return `edited ${timeAgo(post.updated_at)}`;
+  return post.published_at ? formatDateTime(post.published_at) : `edited ${timeAgo(post.updated_at)}`;
 }
