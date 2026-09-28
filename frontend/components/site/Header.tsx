@@ -14,7 +14,7 @@ import { SearchBox } from './SearchBox';
 export async function Header() {
   const [categories, breaking] = await Promise.all([
     getCategories(),
-    getPosts({ breaking: true, per_page: 6 }),
+    getPosts({ breaking: true, per_page: 15 }),
   ]);
 
   return (

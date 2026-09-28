@@ -20,6 +20,9 @@ from app.utils.text import (
 )
 
 MAX_POST_IMAGES = 5
+# Only the newest breaking stories stay in the header ticker; older ones are
+# unflagged automatically so editors never have to clear them by hand.
+MAX_BREAKING_POSTS = 15
 
 
 def resolve_tags(db: Session, names: list[str]) -> list[Tag]:
@@ -103,6 +106,20 @@ def ensure_slug(db: Session, post: Post, requested: str | None) -> None:
         post.slug = unique_slug(db, Post, source, exclude_id=post.id)
 
 
+def trim_breaking(db: Session, keep: int = MAX_BREAKING_POSTS) -> int:
+    """Unflag every published breaking post beyond the newest ``keep``."""
+    stale = (
+        db.query(Post)
+        .filter(Post.is_breaking.is_(True), Post.status == PostStatus.published)
+        .order_by(Post.published_at.desc(), Post.id.desc())
+        .offset(keep)
+        .all()
+    )
+    for post in stale:
+        post.is_breaking = False
+    return len(stale)
+
+
 def publish_due_posts(db: Session) -> int:
     """Flip scheduled posts whose time has come. Called on read of public lists."""
     now = datetime.now(timezone.utc)
@@ -114,6 +131,8 @@ def publish_due_posts(db: Session) -> int:
     for post in due:
         post.status = PostStatus.published
     if due:
+        db.flush()
+        trim_breaking(db)
         db.commit()
     return len(due)
 
