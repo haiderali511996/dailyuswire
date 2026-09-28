@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import Base, SessionLocal, apply_mysql_table_options, engine
 from app.models import Category, Role, Setting, User
+from app.services.categories import reorder_categories
 from app.services.posts import trim_breaking
 from app.utils.security import hash_password
 from app.utils.text import slugify
@@ -152,5 +153,6 @@ def run() -> None:
         ensure_categories(db)
         ensure_admin(db)
         ensure_settings(db)
-        if trim_breaking(db):
-            db.commit()
+        reorder_categories(db)  # clears any duplicate nav orders saved earlier
+        trim_breaking(db)
+        db.commit()
