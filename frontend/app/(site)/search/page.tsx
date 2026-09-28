@@ -10,7 +10,7 @@ import { getPosts } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Search',
-  description: 'Search every story across news, health, sports, entertainment, crypto, business, lifestyle and marketing.',
+  description: 'Search every story across news, health, sports, technology, entertainment, business, lifestyle and marketing.',
   // Search result pages must never enter the index (thin/duplicate content).
   robots: { index: false, follow: true },
 };

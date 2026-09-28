@@ -157,39 +157,6 @@ ARTICLES: list[dict] = [
         ),
     },
     {
-        "category": "crypto",
-        "title": "Reading a Crypto White Paper: A Practical Framework for Spotting Weak Projects",
-        "focus_keyword": "crypto white paper",
-        "excerpt": "Most tokens fail for reasons visible in their own documentation. A structured read of six sections separates engineering from marketing.",
-        "meta_title": "How to Read a Crypto White Paper and Spot Red Flags",
-        "meta_description": "A practical framework for evaluating cryptocurrency projects: tokenomics, distribution, consensus, governance, audits and team disclosure - and the red flags in each.",
-        "tags": ["Cryptocurrency", "Due Diligence", "Blockchain"],
-        "content": p(
-            "<p>A white paper is a sales document that is legally obliged to be somewhat honest. Read in the right order, it usually reveals whether a project is an engineering effort or a distribution scheme.</p>",
-            h2("1. Start with the token distribution, not the introduction"),
-            "<p>Find the allocation table first. What percentage went to the team, to investors, to a foundation, and to the public? What are the vesting cliffs? A project where insiders hold a large majority with short lockups has a built-in seller at every price level, regardless of how good the technology is.</p>",
-            h2("2. Ask what the token is actually for"),
-            "<p>There are only a few defensible answers: it pays for network resources, it secures the network through staking, or it confers governance rights over something with real value. If the token exists mainly so there is something to sell, the paper will be vague here. Vagueness in this section is the single most reliable red flag.</p>",
-            h2("3. Check the consensus and security assumptions"),
-            "<p>Who can censor a transaction? How many entities would have to collude to rewrite history? For newer chains, what is the cost of attacking the network relative to the value it secures? A chain whose validator set is a handful of entities controlled by the founding company is a database with extra steps.</p>",
-            h2("4. Read the governance section sceptically"),
-            "<p>Look for who controls upgrades, whether there is an admin key, and whether that key can freeze funds or mint new tokens. Many projects described as decentralised retain a multisig that can do both. That is not automatically disqualifying - but it should be disclosed, and it changes the risk profile entirely.</p>",
-            h2("5. Verify the audits rather than counting them"),
-            "<p>An audit is a point-in-time review of specific contracts, not a guarantee. Open the actual report. Check which contracts were covered, what severity findings were raised, and whether they were resolved. An audit badge with no linked report is decoration.</p>",
-            h2("6. Look for named people with checkable histories"),
-            "<p>Anonymity has a legitimate history in this field. But anonymity combined with a large insider allocation and an admin key is a specific and well-documented risk pattern.</p>",
-            h2("Red flags, condensed"),
-            "<ul>"
-            "<li>Guaranteed or 'passive' returns of any kind.</li>"
-            "<li>Referral bonuses that pay for recruitment rather than usage.</li>"
-            "<li>A roadmap made of partnerships rather than shipped software.</li>"
-            "<li>A technical section that could describe any blockchain.</li>"
-            "<li>Countdown timers and urgency in a document about infrastructure.</li>"
-            "</ul>",
-            "<p><em>This is journalism, not investment advice. Cryptocurrency is volatile and you can lose your entire investment.</em></p>",
-        ),
-    },
-    {
         "category": "business",
         "title": "What Actually Moves the Fed: Reading the Data the Committee Reads",
         "focus_keyword": "federal reserve decisions",

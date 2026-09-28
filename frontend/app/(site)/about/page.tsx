@@ -16,8 +16,8 @@ export default function AboutPage() {
       <p>
         {SITE_NAME} is an independent digital newsroom publishing original reporting and analysis
         across eight desks: <Link href="/news">News</Link>, <Link href="/health">Health</Link>,{' '}
-        <Link href="/sports">Sports</Link>, <Link href="/entertainment">Entertainment</Link>,{' '}
-        <Link href="/crypto">Crypto</Link>, <Link href="/business">Business</Link>,{' '}
+        <Link href="/sports">Sports</Link>, <Link href="/technology">Technology</Link>,{' '}
+        <Link href="/entertainment">Entertainment</Link>, <Link href="/business">Business</Link>,{' '}
         <Link href="/lifestyle">Lifestyle</Link> and <Link href="/marketing">Marketing</Link>.
       </p>
 

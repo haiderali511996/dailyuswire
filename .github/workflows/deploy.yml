@@ -286,12 +286,13 @@ jobs:
           TARGET: ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_API_PATH }}/
         run: |
           set -euo pipefail
-          # --delete keeps the server clean, but uploaded images, the server's
-          # own .env and the cPanel-managed virtualenv must survive it.
+          # --delete keeps the server clean, but uploaded images, backups, the
+          # server's own .env and the cPanel-managed virtualenv must survive it.
           rsync -az --delete \
             -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=yes -o BatchMode=yes" \
             --exclude '.env' \
             --exclude 'media/' \
+            --exclude 'backups/' \
             --exclude 'tmp/' \
             --exclude '.venv/' \
             --exclude 'passenger_wsgi.py' \

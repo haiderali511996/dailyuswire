@@ -28,13 +28,11 @@ export default function DisclaimerPage() {
         medical advice or delay seeking it because of something you read here.
       </p>
 
-      <h2>Crypto and business content is not financial advice</h2>
+      <h2>Business content is not financial advice</h2>
       <p>
-        Articles in our <Link href="/crypto">Crypto</Link> and{' '}
-        <Link href="/business">Business</Link> sections are for information only and are not
-        investment, tax or legal advice, and not a recommendation to buy or sell any asset.
-        Cryptocurrency is volatile and you can lose your entire investment. Do your own research and
-        consult a licensed adviser before investing.
+        Articles in our <Link href="/business">Business</Link> section are for information only and
+        are not investment, tax or legal advice, and not a recommendation to buy or sell any asset.
+        Do your own research and consult a licensed adviser before investing.
       </p>
 
       <h2>Affiliate disclosure</h2>

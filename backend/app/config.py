@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     revalidate_secret: str = ""
 
     site_name: str = "Daily US Wire"
-    site_tagline: str = "Breaking news, health, sports, entertainment, crypto, business, lifestyle and marketing."
+    site_tagline: str = "Breaking news, health, sports, entertainment, technology, business, lifestyle and marketing."
 
     @property
     def sqlalchemy_url(self) -> str:

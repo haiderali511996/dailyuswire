@@ -34,14 +34,14 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: `${SITE_NAME} - Breaking US News, Health, Sports, Crypto & Business`,
+      default: `${SITE_NAME} - Breaking US News, Health, Sports, Tech & Business`,
       template: `%s | ${SITE_NAME}`,
     },
     description: SITE_DESCRIPTION,
     applicationName: SITE_NAME,
     keywords: [
       'US news', 'breaking news', 'health news', 'sports news', 'entertainment news',
-      'crypto news', 'business news', 'lifestyle', 'digital marketing',
+      'technology news', 'business news', 'lifestyle', 'digital marketing',
     ],
     authors: [{ name: SITE_NAME, url: SITE_URL }],
     publisher: SITE_NAME,
