@@ -23,7 +23,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const paths = (body.paths ?? []).filter((p) => p.startsWith('/'));
-  const tags = body.tags ?? ['content', 'posts', 'sitemap'];
+  const tags = body.tags ?? ['content', 'posts', 'sitemap', 'categories'];
 
   // 'max' expires the tag immediately on the next request (Next 16 signature).
   for (const tag of tags) revalidateTag(tag, 'max');

@@ -118,8 +118,6 @@ async function CategoryBlock({
   index: number;
 }) {
   const { items } = await getPosts({ category: slug, per_page: 5 });
-  if (!items.length) return null;
-
   const [lead, ...others] = items;
 
   return (
@@ -128,19 +126,30 @@ async function CategoryBlock({
       <h2 id={`section-${slug}`} className="sr-only">
         {name}
       </h2>
+      {/* A new section still gets its block so it is visible before its first story. */}
+      {!lead && (
+        <p className="rounded-lg border border-dashed border-rule px-4 py-8 text-center text-sm text-ink-muted">
+          New {name} stories are on the way.{' '}
+          <Link href={`/${slug}`} className="font-semibold text-navy-900 hover:underline">
+            Visit the {name} section
+          </Link>
+        </p>
+      )}
       {/* Collapse to one column when a section has no secondary stories yet. */}
-      <div className={others.length > 0 ? 'grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]' : ''}>
-        <FeatureCard post={lead} />
-        {others.length > 0 && (
-          <ol className="divide-y divide-rule">
-            {others.map((post) => (
-              <li key={post.id} className="py-3.5 first:pt-0 last:pb-0">
-                <ListCard post={post} />
-              </li>
-            ))}
-          </ol>
-        )}
-      </div>
+      {lead && (
+        <div className={others.length > 0 ? 'grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]' : ''}>
+          <FeatureCard post={lead} />
+          {others.length > 0 && (
+            <ol className="divide-y divide-rule">
+              {others.map((post) => (
+                <li key={post.id} className="py-3.5 first:pt-0 last:pb-0">
+                  <ListCard post={post} />
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      )}
       {index === 1 && (
         <AdSlot name="in_feed" format="leaderboard" className="mt-10" />
       )}
