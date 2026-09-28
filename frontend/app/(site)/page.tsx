@@ -16,7 +16,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   // `absolute` skips the layout's "%s | Daily US Wire" template, which would
   // otherwise append the site name a second time.
-  title: { absolute: `${SITE_NAME} - Breaking US News, Health, Sports, Crypto & Business` },
+  title: { absolute: `${SITE_NAME} - Breaking US News, Health, Sports, Tech & Business` },
   description: SITE_DESCRIPTION,
   alternates: { canonical: '/' },
 };

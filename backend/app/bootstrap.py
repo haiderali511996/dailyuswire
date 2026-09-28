@@ -9,6 +9,7 @@ from app.database import Base, SessionLocal, apply_mysql_table_options, engine
 from app.models import Category, Role, Setting, User
 from app.services.categories import reorder_categories
 from app.services.posts import trim_breaking
+from app.services.purge import remove_crypto
 from app.utils.security import hash_password
 from app.utils.text import slugify
 
@@ -48,15 +49,6 @@ CATEGORIES: list[dict] = [
         "description": "Film, television, streaming, music and celebrity news.",
         "meta_title": "Entertainment News: Movies, TV, Music & Celebrity",
         "meta_description": "Entertainment coverage - box office, streaming releases, television, music and the people behind them.",
-    },
-    {
-        "name": "Crypto",
-        "slug": "crypto",
-        "color": "#e8a317",
-        "icon": "bitcoin",
-        "description": "Bitcoin, Ethereum, altcoins, DeFi, regulation and market moves.",
-        "meta_title": "Crypto News: Bitcoin, Ethereum & Market Analysis",
-        "meta_description": "Cryptocurrency news and analysis - Bitcoin and Ethereum prices, DeFi, regulation, exchanges and blockchain technology.",
     },
     {
         "name": "Business",
@@ -150,6 +142,7 @@ def run() -> None:
     apply_mysql_table_options()
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
+        remove_crypto(db)  # the Crypto desk was retired; see services/purge.py
         ensure_categories(db)
         ensure_admin(db)
         ensure_settings(db)

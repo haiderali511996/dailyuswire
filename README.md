@@ -2,7 +2,7 @@
 
 A complete, AdSense-ready news publishing platform: a **Python/FastAPI** backend with a full
 admin panel, and a **Next.js 16** front end covering eight sections — News, Health, Sports,
-Entertainment, Crypto, Business, Lifestyle and Marketing.
+Entertainment, Technology, Business, Lifestyle and Marketing.
 
 ![Sections](https://img.shields.io/badge/sections-8-03305f) ![Backend](https://img.shields.io/badge/backend-FastAPI-009688) ![Frontend](https://img.shields.io/badge/frontend-Next.js%2016-000000)
 
