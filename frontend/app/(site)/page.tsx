@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 
 import { AdSlot } from '@/components/site/AdSlot';
 import { NewsletterForm } from '@/components/site/NewsletterForm';
+import { HeroSlider } from '@/components/site/HeroSlider';
 import { FeatureCard, HeroCard, ListCard, StandardCard } from '@/components/site/PostCard';
 import { SectionHeading } from '@/components/site/SectionHeading';
 import { Sidebar } from '@/components/site/Sidebar';
@@ -38,7 +39,12 @@ export default async function HomePage() {
       {/* Lead block */}
       <section aria-label="Top stories" className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <HeroCard post={hero} />
+          {/* The lead story and the four "Latest" stories rotate every 15s. */}
+          <HeroSlider>
+            {[hero, ...secondary].map((post, i) => (
+              <HeroCard key={post.id} post={post} priority={i === 0} />
+            ))}
+          </HeroSlider>
         </div>
         <div className="lg:col-span-1">
           <h2 className="rule-top pt-2 font-serif text-lg font-bold uppercase text-navy-900">
