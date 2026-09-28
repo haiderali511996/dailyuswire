@@ -9,7 +9,7 @@ export function DesktopNav({ categories }: { categories: Category[] }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Sections" className="hidden lg:block">
-      <ul className="flex items-center gap-1">
+      <ul className="flex flex-wrap items-center gap-x-1">
         <NavLink href="/" label="Home" active={pathname === '/'} />
         {categories.map((c) => (
           <NavLink

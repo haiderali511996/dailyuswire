@@ -30,6 +30,7 @@ from app.schemas import (
     UserOut,
     UserUpdate,
 )
+from app.services.categories import reorder_categories
 from app.services.posts import revalidate_frontend
 from app.utils.images import UploadError, save_image
 from app.utils.security import hash_password
@@ -68,25 +69,33 @@ def stats(db: DbSession, user: CurrentUser) -> DashboardStats:
 
 
 # ---------------- Categories ----------------
+async def _refresh_nav() -> None:
+    # The section nav is in the layout, so every page has to be refreshed.
+    await revalidate_frontend(["/"], tags=["categories", "content", "settings"])
+
+
 @router.get("/categories", response_model=list[CategoryOut])
 def list_categories(db: DbSession, user: CurrentUser) -> list[Category]:
     return db.query(Category).order_by(Category.position, Category.name).all()
 
 
 @router.post("/categories", response_model=CategoryOut, status_code=201)
-def create_category(db: DbSession, user: EditorUser, payload: CategoryCreate) -> Category:
+async def create_category(db: DbSession, user: EditorUser, payload: CategoryCreate) -> Category:
     if db.query(Category).filter(Category.name == payload.name).one_or_none():
         raise HTTPException(status_code=409, detail="A category with that name already exists")
     data = payload.model_dump(exclude={"slug"})
     category = Category(**data, slug=unique_slug(db, Category, payload.slug or payload.name))
     db.add(category)
+    db.flush()
+    reorder_categories(db, pinned=category)
     db.commit()
     db.refresh(category)
+    await _refresh_nav()
     return category
 
 
 @router.patch("/categories/{category_id}", response_model=CategoryOut)
-def update_category(
+async def update_category(
     db: DbSession, user: EditorUser, category_id: int, payload: CategoryUpdate
 ) -> Category:
     category = db.get(Category, category_id)
@@ -97,13 +106,16 @@ def update_category(
         setattr(category, key, value)
     if payload.slug and slugify(payload.slug) != category.slug:
         category.slug = unique_slug(db, Category, payload.slug, exclude_id=category.id)
+    db.flush()
+    reorder_categories(db, pinned=category)
     db.commit()
     db.refresh(category)
+    await _refresh_nav()
     return category
 
 
 @router.delete("/categories/{category_id}", status_code=204)
-def delete_category(db: DbSession, user: AdminUser, category_id: int) -> None:
+async def delete_category(db: DbSession, user: AdminUser, category_id: int) -> None:
     category = db.get(Category, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -115,6 +127,7 @@ def delete_category(db: DbSession, user: AdminUser, category_id: int) -> None:
         )
     db.delete(category)
     db.commit()
+    await _refresh_nav()
 
 
 # ---------------- Users ----------------
