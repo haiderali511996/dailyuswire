@@ -22,6 +22,7 @@ from app.services.posts import (
     resolve_tags,
     revalidate_frontend,
     sync_images,
+    trim_breaking,
 )
 from app.utils.text import seo_score
 
@@ -125,6 +126,8 @@ async def create_post(db: DbSession, user: CurrentUser, payload: PostCreate) -> 
     db.flush()  # loads post.category so the SEO defaults see the real section
     apply_seo_defaults(post)
     sync_images(db, post, payload.images)
+    db.flush()
+    trim_breaking(db)
     db.commit()
     db.refresh(post)
     if post.status == PostStatus.published:
@@ -159,6 +162,7 @@ async def update_post(db: DbSession, user: CurrentUser, post_id: int, payload: P
     db.flush()
     db.refresh(post, ['category'])  # a changed category_id must show in post.category first
     apply_seo_defaults(post)
+    trim_breaking(db)
 
     db.commit()
     db.refresh(post)
