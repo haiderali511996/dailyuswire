@@ -9,7 +9,8 @@ const INTERVAL_MS = 15_000;
  *
  * All slides share one grid cell and cross-fade, so the lead story is in the
  * HTML (and is the LCP element) before any JavaScript runs. Rotation pauses
- * while the pointer or keyboard focus is inside the slider.
+ * while the pointer or keyboard focus is inside the slider. There are no
+ * on-screen controls: the "Latest" list beside it links to the same stories.
  */
 export function HeroSlider({ children }: { children: ReactNode }) {
   const slides = Children.toArray(children);
@@ -51,21 +52,6 @@ export function HeroSlider({ children }: { children: ReactNode }) {
           >
             {slide}
           </div>
-        ))}
-      </div>
-
-      <div className="absolute right-4 top-4 z-10 flex gap-1.5 sm:right-6 sm:top-6">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setActive(i)}
-            aria-label={`Show story ${i + 1}`}
-            aria-current={i === active}
-            className={`h-2 rounded-full transition-all ${
-              i === active ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
-            }`}
-          />
         ))}
       </div>
     </div>
