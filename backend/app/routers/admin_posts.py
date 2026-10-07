@@ -101,6 +101,27 @@ def list_posts(
     )
 
 
+# Authors write; editors and admins approve. An author can only save drafts,
+# and cannot touch an article once an editor has published or scheduled it.
+LIVE_STATUSES = (PostStatus.published, PostStatus.scheduled)
+
+
+def _check_author_status(user, requested: PostStatus | None) -> None:
+    if user.role == Role.author and requested not in (None, PostStatus.draft):
+        raise HTTPException(
+            status_code=403,
+            detail="Authors can only save drafts. An editor reviews and publishes your article.",
+        )
+
+
+def _check_author_can_change(user, post: Post) -> None:
+    if user.role == Role.author and post.status in LIVE_STATUSES:
+        raise HTTPException(
+            status_code=403,
+            detail="This article has been approved by an editor. Ask an editor to change it.",
+        )
+
+
 @router.get("/{post_id}", response_model=PostOut)
 def get_post(db: DbSession, user: CurrentUser, post_id: int) -> Post:
     post = _load(db, post_id)
@@ -111,6 +132,7 @@ def get_post(db: DbSession, user: CurrentUser, post_id: int) -> Post:
 
 @router.post("", response_model=PostOut, status_code=201)
 async def create_post(db: DbSession, user: CurrentUser, payload: PostCreate) -> Post:
+    _check_author_status(user, payload.status)
     data = payload.model_dump(exclude={"tags", "images", "slug", "content", "status", "published_at"})
     if user.role == Role.author:
         data["author_id"] = user.id
@@ -140,6 +162,8 @@ async def update_post(db: DbSession, user: CurrentUser, post_id: int, payload: P
     post = _load(db, post_id)
     if not can_edit_post(user, post):
         raise HTTPException(status_code=403, detail="Not your post")
+    _check_author_can_change(user, post)
+    _check_author_status(user, payload.status)
     old_paths = _paths_for(post)
 
     data = payload.model_dump(
@@ -175,6 +199,7 @@ async def delete_post(db: DbSession, user: CurrentUser, post_id: int) -> None:
     post = _load(db, post_id)
     if not can_edit_post(user, post):
         raise HTTPException(status_code=403, detail="Not your post")
+    _check_author_can_change(user, post)
     paths = _paths_for(post)
     db.delete(post)
     db.commit()

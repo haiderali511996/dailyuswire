@@ -7,6 +7,7 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { StatusBadge } from '@/components/admin/PostEditor';
 import { useToast } from '@/components/admin/Toast';
 import { adminApi } from '@/lib/admin-api';
+import { useAuth } from '@/lib/auth-context';
 import { formatDateTime, timeAgo } from '@/lib/format';
 import type { Category, Paginated, Post, PostStatus } from '@/lib/types';
 
@@ -31,6 +32,8 @@ export default function PostsPage() {
 function PostsList() {
   const params = useSearchParams();
   const { push } = useToast();
+  const { can } = useAuth();
+  const canPublish = can('admin', 'editor');
 
   const [data, setData] = useState<Paginated<Post> | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -106,6 +109,11 @@ function PostsList() {
         <div>
           <h1 className="font-serif text-2xl font-bold text-navy-900">Articles</h1>
           <p className="mt-1 text-sm text-ink-muted">{data?.total ?? 0} total</p>
+          <p className="mt-1 text-xs text-ink-faint">
+            {canPublish
+              ? "Authors' drafts wait for your review: open a draft, check it, then click Publish to approve it."
+              : 'Your articles stay as drafts until an editor checks and approves them.'}
+          </p>
         </div>
         <Link href="/admin/posts/new" className="btn-accent btn-sm">
           + New article
@@ -213,16 +221,20 @@ function PostsList() {
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-ink-muted">{post.views}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
-                      <button type="button" onClick={() => toggleStatus(post)} className="btn-ghost btn-sm mr-1">
-                        {post.status === 'published' ? 'Unpublish' : 'Publish'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => remove(post)}
-                        className="btn-sm rounded-md border border-flag-200 px-2.5 text-flag-700 hover:bg-flag-50"
-                      >
-                        Delete
-                      </button>
+                      {canPublish && (
+                        <button type="button" onClick={() => toggleStatus(post)} className="btn-ghost btn-sm mr-1">
+                          {post.status === 'published' ? 'Unpublish' : 'Publish'}
+                        </button>
+                      )}
+                      {(canPublish || !isLive(post)) && (
+                        <button
+                          type="button"
+                          onClick={() => remove(post)}
+                          className="btn-sm rounded-md border border-flag-200 px-2.5 text-flag-700 hover:bg-flag-50"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -248,16 +260,20 @@ function PostsList() {
                   <Link href={`/admin/posts/${post.id}`} className="btn-ghost btn-sm flex-1">
                     Edit
                   </Link>
-                  <button type="button" onClick={() => toggleStatus(post)} className="btn-ghost btn-sm flex-1">
-                    {post.status === 'published' ? 'Unpublish' : 'Publish'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => remove(post)}
-                    className="btn-sm rounded-md border border-flag-200 px-3 text-flag-700"
-                  >
-                    Delete
-                  </button>
+                  {canPublish && (
+                    <button type="button" onClick={() => toggleStatus(post)} className="btn-ghost btn-sm flex-1">
+                      {post.status === 'published' ? 'Unpublish' : 'Publish'}
+                    </button>
+                  )}
+                  {(canPublish || !isLive(post)) && (
+                    <button
+                      type="button"
+                      onClick={() => remove(post)}
+                      className="btn-sm rounded-md border border-flag-200 px-3 text-flag-700"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </li>
             ))}
@@ -285,6 +301,10 @@ function PostsList() {
       )}
     </div>
   );
+}
+
+function isLive(post: Post): boolean {
+  return post.status === 'published' || post.status === 'scheduled';
 }
 
 function postDate(post: Post): string {
