@@ -3,7 +3,7 @@ import { Playfair_Display, Source_Sans_3 } from 'next/font/google';
 
 import { Analytics } from '@/components/site/Analytics';
 import { JsonLd } from '@/components/site/JsonLd';
-import { API_URL, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/config';
+import { API_URL, SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_LINKS } from '@/lib/config';
 import { getSiteSettings } from '@/lib/site-settings';
 
 import './globals.css';
@@ -107,7 +107,7 @@ const SITE_SCHEMA = {
       name: SITE_NAME,
       url: SITE_URL,
       logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.png`, width: 900, height: 210 },
-      sameAs: ['https://twitter.com/dailyuswire', 'https://facebook.com/dailyuswire'],
+      sameAs: Object.values(SOCIAL_LINKS),
     },
     {
       '@type': 'WebSite',

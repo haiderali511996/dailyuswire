@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { CONTACT_EMAIL } from '@/lib/config';
+
 export function ShareBar({ url, title }: { url: string; title: string }) {
   const [copied, setCopied] = useState(false);
   const encodedUrl = encodeURIComponent(url);
@@ -24,8 +26,8 @@ export function ShareBar({ url, title }: { url: string; title: string }) {
       icon: 'M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm6 0h3.8v1.7h.1a4.2 4.2 0 0 1 3.8-2c4 0 4.8 2.6 4.8 6V21h-4v-5.6c0-1.3 0-3-1.9-3s-2.1 1.4-2.1 2.9V21H9V9Z',
     },
     {
-      label: 'Share by email',
-      href: `mailto:?subject=${encodedTitle}&body=${encodedUrl}`,
+      label: `Email ${CONTACT_EMAIL}`,
+      href: `mailto:${CONTACT_EMAIL}?subject=${encodedTitle}&body=${encodedUrl}`,
       icon: 'M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6Zm2.4.5 7.6 5.6 7.6-5.6H4.4Z',
     },
   ];
