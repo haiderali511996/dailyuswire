@@ -47,9 +47,6 @@ export default function ContactPage() {
         <br />
         United States
       </p>
-      <p className="text-sm text-ink-faint">
-        Replace the placeholder address above with your registered business address before launch.
-      </p>
     </Prose>
   );
 }

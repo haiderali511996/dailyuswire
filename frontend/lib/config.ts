@@ -30,6 +30,16 @@ export const SITE_DESCRIPTION =
   'Daily US Wire delivers breaking US news plus original reporting on health, sports, technology, entertainment, business, lifestyle and marketing.';
 
 export const TWITTER_HANDLE = '@dailyuswire';
+export const CONTACT_EMAIL = 'info@dailyuswire.com';
+
+/** Official social profiles - footer icons and the organisation's sameAs. */
+export const SOCIAL_LINKS = {
+  facebook: 'https://www.facebook.com/dailyuswire/',
+  x: 'https://x.com/DailyUSWire',
+  instagram: 'https://www.instagram.com/dailyuswire/',
+  linkedin: 'https://www.linkedin.com/company/dailyuswire',
+};
+
 export const ADSENSE_CLIENT = orElse(process.env.NEXT_PUBLIC_ADSENSE_CLIENT, '');
 export const GA_ID = orElse(process.env.NEXT_PUBLIC_GA_ID, '');
 export const GSC_VERIFICATION = orElse(process.env.NEXT_PUBLIC_GSC_VERIFICATION, '');
