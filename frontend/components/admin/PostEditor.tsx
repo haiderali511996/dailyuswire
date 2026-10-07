@@ -107,7 +107,9 @@ export function PostEditor({ postId }: { postId?: number }) {
     if (!slugTouched && form.title) set('slug', slugify(form.title));
   }, [form.title, slugTouched, set]);
 
-  const canPublish = can('admin', 'editor') || true; // authors may publish their own work
+  // Authors write and submit; an editor or admin reviews and publishes.
+  const canPublish = can('admin', 'editor');
+  const lockedForAuthor = !canPublish && (form.status === 'published' || form.status === 'scheduled');
 
   async function save(nextStatus?: PostStatus) {
     const status = nextStatus ?? form.status;
@@ -154,10 +156,10 @@ export function PostEditor({ postId }: { postId?: number }) {
       if (postId) {
         const updated = await adminApi.updatePost(postId, payload);
         setForm(toForm(updated));
-        push('success', savedMessage(status, form.published_at, 'Changes saved.'));
+        push('success', canPublish ? savedMessage(status, form.published_at, 'Changes saved.') : SUBMITTED);
       } else {
         const created = await adminApi.createPost(payload);
-        push('success', savedMessage(status, form.published_at, 'Draft saved.'));
+        push('success', canPublish ? savedMessage(status, form.published_at, 'Draft saved.') : SUBMITTED);
         router.push(`/admin/posts/${created.id}`);
       }
     } catch (e) {
@@ -213,42 +215,54 @@ export function PostEditor({ postId }: { postId?: number }) {
               View
             </Link>
           )}
-          <button type="button" onClick={() => save('draft')} disabled={saving} className="btn-ghost btn-sm">
-            Save draft
-          </button>
-          {form.status !== 'published' && (
-            <div className="flex items-center gap-1 rounded-md border border-rule bg-wash px-2 py-1">
-              <label htmlFor="schedule-at" className="text-2xs font-semibold uppercase tracking-wide text-ink-faint">
-                Publish on
-              </label>
-              <input
-                ref={scheduleInputRef}
-                id="schedule-at"
-                type="datetime-local"
-                value={form.published_at}
-                min={toDatetimeLocal(new Date().toISOString())}
-                onChange={(e) => set('published_at', e.target.value)}
-                className="rounded border border-rule bg-white px-1.5 py-0.5 text-xs"
-              />
-              <button
-                type="button"
-                onClick={() => save('scheduled')}
-                disabled={saving}
-                className="btn-ghost btn-sm"
-                title="Publish automatically at the chosen date and time"
-              >
-                Schedule
-              </button>
-            </div>
+          {lockedForAuthor ? (
+            <p className="max-w-xs text-xs text-ink-muted">
+              Approved by an editor. Ask an editor if this article needs changes.
+            </p>
+          ) : !canPublish ? (
+            <button type="button" onClick={() => save('draft')} disabled={saving} className="btn-accent btn-sm">
+              {saving ? 'Saving...' : 'Submit for review'}
+            </button>
+          ) : (
+            <>
+            <button type="button" onClick={() => save('draft')} disabled={saving} className="btn-ghost btn-sm">
+              Save draft
+            </button>
+            {form.status !== 'published' && (
+              <div className="flex items-center gap-1 rounded-md border border-rule bg-wash px-2 py-1">
+                <label htmlFor="schedule-at" className="text-2xs font-semibold uppercase tracking-wide text-ink-faint">
+                  Publish on
+                </label>
+                <input
+                  ref={scheduleInputRef}
+                  id="schedule-at"
+                  type="datetime-local"
+                  value={form.published_at}
+                  min={toDatetimeLocal(new Date().toISOString())}
+                  onChange={(e) => set('published_at', e.target.value)}
+                  className="rounded border border-rule bg-white px-1.5 py-0.5 text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => save('scheduled')}
+                  disabled={saving}
+                  className="btn-ghost btn-sm"
+                  title="Publish automatically at the chosen date and time"
+                >
+                  Schedule
+                </button>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => save('published')}
+              disabled={saving || !canPublish}
+              className="btn-accent btn-sm"
+            >
+              {saving ? 'Saving...' : form.status === 'published' ? 'Update' : 'Publish'}
+            </button>
+            </>
           )}
-          <button
-            type="button"
-            onClick={() => save('published')}
-            disabled={saving || !canPublish}
-            className="btn-accent btn-sm"
-          >
-            {saving ? 'Saving...' : form.status === 'published' ? 'Update' : 'Publish'}
-          </button>
         </div>
       </div>
 
@@ -661,6 +675,8 @@ function toForm(post: Post): FormState {
     tags: post.tags.map((t) => t.name),
   };
 }
+
+const SUBMITTED = 'Saved and sent for review. An editor will check and approve it before it goes live.';
 
 function savedMessage(status: PostStatus, publishedAt: string, fallback: string): string {
   if (status === 'published') return 'Article published.';
