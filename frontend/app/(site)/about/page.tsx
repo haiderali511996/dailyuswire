@@ -2,13 +2,19 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Prose } from '@/components/site/Prose';
+import { getPageSeo } from '@/lib/api';
 import { SITE_NAME } from '@/lib/config';
 
-export const metadata: Metadata = {
-  title: 'About Us',
-  description: `Who we are, what we cover and how ${SITE_NAME} reports the news across eight desks.`,
-  alternates: { canonical: '/about' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo('about');
+  return {
+    title: seo?.title || 'About Us',
+    description:
+      seo?.description ||
+      `Who we are, what we cover and how ${SITE_NAME} reports the news across eight desks.`,
+    alternates: { canonical: '/about' },
+  };
+}
 
 export default function AboutPage() {
   return (

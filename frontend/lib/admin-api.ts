@@ -142,4 +142,18 @@ export const adminApi = {
       method: 'PUT',
       body: JSON.stringify(entries),
     }),
+
+  listPagesSeo: () =>
+    request<PageSeoRow[]>('/api/admin/pages-seo'),
+  updatePageSeo: (slug: string, body: { meta_title: string; meta_description: string }) =>
+    request<PageSeoRow>(`/api/admin/pages-seo/${slug}`, { method: 'PUT', body: JSON.stringify(body) }),
 };
+
+export interface PageSeoRow {
+  slug: string;
+  label: string;
+  path: string;
+  meta_title: string;
+  meta_description: string;
+}
+

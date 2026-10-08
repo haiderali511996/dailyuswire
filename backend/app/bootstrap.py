@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import Base, SessionLocal, apply_mysql_table_options, engine
-from app.models import Category, Role, Setting, User
+from app.models import Category, PageSeo, Role, Setting, User
 from app.services.categories import reorder_categories
 from app.services.posts import trim_breaking
 from app.services.purge import remove_crypto
@@ -130,6 +130,39 @@ def ensure_admin(db: Session) -> User:
     return user
 
 
+PAGE_SEO: list[dict] = [
+    {
+        "slug": "home",
+        "label": "Home page",
+        "path": "/",
+        "meta_title": f"{settings.site_name} - Breaking US News, Health, Sports, Tech & Business",
+        "meta_description": "Daily US Wire delivers breaking US news plus original reporting on health, sports, technology, entertainment, business, lifestyle and marketing.",
+    },
+    {
+        "slug": "about",
+        "label": "About page",
+        "path": "/about",
+        "meta_title": "About Us",
+        "meta_description": f"Who we are, what we cover and how {settings.site_name} reports the news across eight desks.",
+    },
+    {
+        "slug": "contact",
+        "label": "Contact page",
+        "path": "/contact",
+        "meta_title": "Contact Us",
+        "meta_description": f"Get in touch with the {settings.site_name} team with questions, feedback or enquiries.",
+    },
+]
+
+
+def ensure_page_seo(db: Session) -> None:
+    """Seed the fixed pages once; later edits made in the admin are never overwritten."""
+    for row in PAGE_SEO:
+        if not db.get(PageSeo, row["slug"]):
+            db.add(PageSeo(**row))
+    db.commit()
+
+
 def ensure_settings(db: Session) -> None:
     for key, value in DEFAULT_SETTINGS.items():
         if not db.get(Setting, key):
@@ -146,6 +179,7 @@ def run() -> None:
         ensure_categories(db)
         ensure_admin(db)
         ensure_settings(db)
+        ensure_page_seo(db)
         reorder_categories(db)  # clears any duplicate nav orders saved earlier
         trim_breaking(db)
         db.commit()

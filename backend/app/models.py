@@ -186,3 +186,15 @@ class Setting(Base):
 
     key: Mapped[str] = mapped_column(String(120), primary_key=True)
     value: Mapped[str] = mapped_column(Text, default="")
+
+
+class PageSeo(Base):
+    """Meta title/description for the fixed pages (home, about, contact)."""
+
+    __tablename__ = "page_seo"
+
+    slug: Mapped[str] = mapped_column(String(60), primary_key=True)
+    label: Mapped[str] = mapped_column(String(120), default="")
+    path: Mapped[str] = mapped_column(String(255), default="/")
+    meta_title: Mapped[str] = mapped_column(String(255), default="")
+    meta_description: Mapped[str] = mapped_column(String(500), default="")
