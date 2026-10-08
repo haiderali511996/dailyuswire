@@ -116,3 +116,15 @@ export function registerView(slug: string): void {
     keepalive: true,
   }).catch(() => {});
 }
+
+export type PageSlug = 'home' | 'about' | 'contact';
+
+/** Meta title/description of a fixed page from the database, or null so the caller uses its default. */
+export async function getPageSeo(slug: PageSlug): Promise<{ title: string; description: string } | null> {
+  const all = await api<Record<string, { meta_title: string; meta_description: string }>>('/api/pages-seo', {
+    tags: ['pages-seo'],
+  });
+  const row = all?.[slug];
+  if (!row) return null;
+  return { title: row.meta_title.trim(), description: row.meta_description.trim() };
+}

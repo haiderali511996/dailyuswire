@@ -7,19 +7,24 @@ import { HeroSlider } from '@/components/site/HeroSlider';
 import { FeatureCard, HeroCard, ListCard, StandardCard } from '@/components/site/PostCard';
 import { SectionHeading } from '@/components/site/SectionHeading';
 import { Sidebar } from '@/components/site/Sidebar';
-import { getCategories, getPosts } from '@/lib/api';
+import { getCategories, getPageSeo, getPosts } from '@/lib/api';
 import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/config';
 import type { Metadata } from 'next';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  // `absolute` skips the layout's "%s | Daily US Wire" template, which would
-  // otherwise append the site name a second time.
-  title: { absolute: `${SITE_NAME} - Breaking US News, Health, Sports, Tech & Business` },
-  description: SITE_DESCRIPTION,
-  alternates: { canonical: '/' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo('home');
+  return {
+    // `absolute` skips the layout's "%s | Daily US Wire" template, which would
+    // otherwise append the site name a second time.
+    title: {
+      absolute: seo?.title || `${SITE_NAME} - Breaking US News, Health, Sports, Tech & Business`,
+    },
+    description: seo?.description || SITE_DESCRIPTION,
+    alternates: { canonical: '/' },
+  };
+}
 
 export default async function HomePage() {
   const [categories, latest] = await Promise.all([

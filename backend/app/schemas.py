@@ -306,6 +306,21 @@ class SettingIn(BaseModel):
     value: str
 
 
+class PageSeoOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    slug: str
+    label: str
+    path: str
+    meta_title: str
+    meta_description: str
+
+
+class PageSeoIn(BaseModel):
+    meta_title: str = Field("", max_length=255)
+    meta_description: str = Field("", max_length=500)
+
+
 class SeoAnalysisIn(BaseModel):
     title: str = ""
     meta_title: str = ""

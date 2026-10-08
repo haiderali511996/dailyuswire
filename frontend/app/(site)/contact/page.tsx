@@ -1,13 +1,19 @@
 import type { Metadata } from 'next';
 
 import { Prose } from '@/components/site/Prose';
+import { getPageSeo } from '@/lib/api';
 import { SITE_NAME } from '@/lib/config';
 
-export const metadata: Metadata = {
-  title: 'Contact Us',
-  description: `Get in touch with the ${SITE_NAME} team with questions, feedback or enquiries.`,
-  alternates: { canonical: '/contact' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo('contact');
+  return {
+    title: seo?.title || 'Contact Us',
+    description:
+      seo?.description ||
+      `Get in touch with the ${SITE_NAME} team with questions, feedback or enquiries.`,
+    alternates: { canonical: '/contact' },
+  };
+}
 
 const DESKS = [
   { label: 'Information', email: 'info@dailyuswire.com', note: 'General information about Daily US Wire and our coverage.' },

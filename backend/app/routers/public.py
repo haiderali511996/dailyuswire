@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.config import settings
 from app.deps import DbSession
-from app.models import Category, Post, PostStatus, Setting, Subscriber, Tag, User
+from app.models import Category, PageSeo, Post, PostStatus, Setting, Subscriber, Tag, User
 from app.schemas import (
     AuthorPublic,
     CategoryWithCount,
@@ -281,6 +281,16 @@ def public_settings(db: DbSession, response: Response) -> dict[str, str]:
     response.headers["Cache-Control"] = CACHE
     stored = {s.key: s.value for s in db.query(Setting).filter(Setting.key.in_(PUBLIC_SETTING_KEYS)).all()}
     return {key: (stored.get(key) or "").strip() for key in PUBLIC_SETTING_KEYS}
+
+
+@router.get("/pages-seo")
+def public_pages_seo(db: DbSession, response: Response) -> dict[str, dict[str, str]]:
+    """Meta title/description of the fixed pages, keyed by slug (home, about, contact)."""
+    response.headers["Cache-Control"] = CACHE
+    return {
+        row.slug: {"meta_title": row.meta_title, "meta_description": row.meta_description}
+        for row in db.query(PageSeo).all()
+    }
 
 
 @router.post("/subscribe", status_code=201)

@@ -11,6 +11,7 @@ from app.deps import AdminUser, CurrentUser, DbSession, EditorUser
 from app.models import (
     Category,
     Media,
+    PageSeo,
     Post,
     PostStatus,
     Role,
@@ -24,6 +25,8 @@ from app.schemas import (
     CategoryUpdate,
     DashboardStats,
     MediaOut,
+    PageSeoIn,
+    PageSeoOut,
     PostCard,
     SettingIn,
     UserCreate,
@@ -263,3 +266,22 @@ async def put_settings(db: DbSession, user: AdminUser, payload: list[SettingIn])
     # analytics, ad units), so expire the cached fetch and the root layout.
     await revalidate_frontend(["/"], tags=["settings"])
     return {s.key: s.value for s in db.query(Setting).all()}
+
+
+# ---------------- Fixed-page SEO (home, about, contact) ----------------
+@router.get("/pages-seo", response_model=list[PageSeoOut])
+def list_pages_seo(db: DbSession, user: CurrentUser) -> list[PageSeo]:
+    return db.query(PageSeo).order_by(PageSeo.path).all()
+
+
+@router.put("/pages-seo/{slug}", response_model=PageSeoOut)
+async def update_page_seo(db: DbSession, user: EditorUser, slug: str, payload: PageSeoIn) -> PageSeo:
+    row = db.get(PageSeo, slug)
+    if not row:
+        raise HTTPException(status_code=404, detail="Page not found")
+    row.meta_title = payload.meta_title.strip()
+    row.meta_description = payload.meta_description.strip()
+    db.commit()
+    db.refresh(row)
+    await revalidate_frontend([row.path], tags=["pages-seo"])
+    return row
