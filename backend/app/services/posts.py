@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 import httpx
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -16,6 +17,7 @@ from app.utils.text import (
     reading_time,
     sanitize_html,
     slugify,
+    strip_chatgpt_utm,
     unique_slug,
 )
 
@@ -153,3 +155,23 @@ async def revalidate_frontend(paths: list[str], tags: list[str] | None = None) -
             await client.post(settings.revalidate_url, json=body)
     except Exception:  # noqa: BLE001 - revalidation must never break a save
         pass
+
+
+def strip_chatgpt_links(db: Session) -> int:
+    """Remove ?utm_source=chatgpt.com from links already saved in posts.
+
+    Runs on startup; once no post carries the parameter it is a single cheap
+    query that matches nothing.
+    """
+    fields = ("content", "excerpt", "source_url", "canonical_url")
+    marker = "%utm_source=chatgpt.com%"
+    posts = (
+        db.query(Post)
+        .filter(or_(*(getattr(Post, f).ilike(marker) for f in fields)))
+        .all()
+    )
+    for post in posts:
+        for f in fields:
+            setattr(post, f, strip_chatgpt_utm(getattr(post, f) or ""))
+    db.commit()
+    return len(posts)

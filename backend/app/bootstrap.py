@@ -8,7 +8,7 @@ from app.config import settings
 from app.database import Base, SessionLocal, apply_mysql_table_options, engine
 from app.models import Category, PageSeo, Role, Setting, User
 from app.services.categories import reorder_categories
-from app.services.posts import trim_breaking
+from app.services.posts import strip_chatgpt_links, trim_breaking
 from app.services.purge import remove_crypto
 from app.utils.security import hash_password
 from app.utils.text import slugify
@@ -182,4 +182,5 @@ def run() -> None:
         ensure_page_seo(db)
         reorder_categories(db)  # clears any duplicate nav orders saved earlier
         trim_breaking(db)
+        strip_chatgpt_links(db)  # ChatGPT tracking tags on cited links
         db.commit()

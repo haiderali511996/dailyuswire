@@ -45,13 +45,29 @@ CSS_SANITIZER = CSSSanitizer(
 
 ALLOWED_PROTOCOLS = ["http", "https", "mailto", "tel", "data"]
 
+# ChatGPT appends ?utm_source=chatgpt.com to every link it cites. Only that
+# parameter is dropped; the rest of the URL is left exactly as written.
+_CHATGPT_UTM = r"utm_source=chatgpt\.com(?![\w.%-])"
+_AMP = r"(?:&amp;|&)"
+
+
+def strip_chatgpt_utm(text: str) -> str:
+    if not text or "utm_source=chatgpt.com" not in text.lower():
+        return text
+    # First parameter followed by others: keep the "?" for the next one.
+    text = re.sub(rf"\?{_CHATGPT_UTM}{_AMP}", "?", text, flags=re.I)
+    # Any later parameter.
+    text = re.sub(rf"{_AMP}{_CHATGPT_UTM}", "", text, flags=re.I)
+    # The only parameter.
+    return re.sub(rf"\?{_CHATGPT_UTM}", "", text, flags=re.I)
+
 
 def sanitize_html(html: str) -> str:
     """Strip anything that could execute. Editor output is never trusted."""
     if not html:
         return ""
     cleaned = bleach.clean(
-        html,
+        strip_chatgpt_utm(html),
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRS,
         protocols=ALLOWED_PROTOCOLS,
