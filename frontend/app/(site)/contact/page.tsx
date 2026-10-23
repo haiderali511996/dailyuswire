@@ -47,9 +47,9 @@ export default function ContactPage() {
       <p>
         {SITE_NAME} Editorial
         <br />
-        1 Press Plaza, Suite 400
+        680 Amboy Ave
         <br />
-        Washington, DC 20001
+        Woodbridge, NJ 07095
         <br />
         United States
       </p>

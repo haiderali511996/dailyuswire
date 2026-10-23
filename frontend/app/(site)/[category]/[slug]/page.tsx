@@ -14,8 +14,9 @@ import { ShareBar } from '@/components/site/ShareBar';
 import { TableOfContents } from '@/components/site/TableOfContents';
 import { ViewCounter } from '@/components/site/ViewCounter';
 import { getPost, getPostSchema, getPosts, getRelated, getTrending } from '@/lib/api';
+import { authorBio } from '@/lib/author';
 import { SITE_NAME, absoluteUrl, mediaUrl, postPath } from '@/lib/config';
-import { formatDate } from '@/lib/format';
+import { formatDate, wasUpdated } from '@/lib/format';
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -136,6 +137,11 @@ export default async function ArticlePage({ params }: Props) {
                             Published <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
                           </>
                         )}
+                        {wasUpdated(post.published_at, post.updated_at) && (
+                          <>
+                            {' '}&middot; Updated <time dateTime={post.updated_at}>{formatDate(post.updated_at)}</time>
+                          </>
+                        )}
                       </p>
                     </div>
                   )}
@@ -204,6 +210,35 @@ export default async function ArticlePage({ params }: Props) {
             <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-rule pt-6">
               <ShareBar url={url} title={post.title} />
             </div>
+
+            {post.author && (
+              <section
+                aria-label="About the author"
+                className="mt-8 flex gap-4 rounded-lg border border-rule bg-wash p-5"
+              >
+                <div
+                  aria-hidden
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-navy-800 font-serif text-xl font-bold text-white"
+                >
+                  {post.author.name.slice(0, 1)}
+                </div>
+                <div>
+                  <p className="kicker text-ink-faint">About the author</p>
+                  <p className="mt-1 font-serif text-lg font-bold text-navy-900">
+                    <Link href={`/author/${post.author.slug}`} className="hover:text-flag-600 hover:underline">
+                      {post.author.name}
+                    </Link>
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-muted">{authorBio(post.author.bio)}</p>
+                  <Link
+                    href={`/author/${post.author.slug}`}
+                    className="mt-2 inline-block text-sm font-semibold text-navy-800 hover:underline"
+                  >
+                    More from {post.author.name} &rarr;
+                  </Link>
+                </div>
+              </section>
+            )}
 
             <AdSlot name="footer" format="rectangle" />
 

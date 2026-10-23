@@ -5,7 +5,6 @@ import { CONTACT_EMAIL, SITE_NAME, SOCIAL_LINKS } from '@/lib/config';
 import { getSiteSettings } from '@/lib/site-settings';
 
 import { Logo } from './Logo';
-import { NewsletterForm } from './NewsletterForm';
 
 const LEGAL = [
   { href: '/about', label: 'About Us' },
@@ -22,7 +21,7 @@ export async function Footer() {
 
   return (
     <footer className="mt-16 border-t-4 border-flag-600 bg-navy-900 text-navy-100">
-      <div className="shell grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-4">
+      <div className="shell grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-3">
         <div className="lg:col-span-1">
           <Logo variant="white" width={220} className="block w-[190px]" />
           <p className="mt-4 text-sm leading-relaxed text-navy-200">{s.site_tagline}</p>
@@ -75,14 +74,6 @@ export async function Footer() {
             ))}
           </ul>
         </nav>
-
-        <div>
-          <h2 className="kicker text-flag-300">The Morning Wire</h2>
-          <p className="mt-4 text-sm text-navy-200">
-            One email each morning with the stories that matter. No spam, unsubscribe anytime.
-          </p>
-          <NewsletterForm className="mt-4" />
-        </div>
       </div>
 
       <div className="border-t border-white/10">

@@ -56,3 +56,11 @@ export function toDatetimeLocal(value: string | null | undefined): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
+
+/** True when an article was edited meaningfully after it went live (over an hour later). */
+export function wasUpdated(published: string | null | undefined, updated: string | null | undefined): boolean {
+  if (!published || !updated) return false;
+  const p = new Date(published).getTime();
+  const u = new Date(updated).getTime();
+  return !Number.isNaN(p) && !Number.isNaN(u) && u - p > 60 * 60 * 1000;
+}
