@@ -135,8 +135,10 @@ async def delete_category(db: DbSession, user: AdminUser, category_id: int) -> N
 
 # ---------------- Users ----------------
 @router.get("/users", response_model=list[UserOut])
-def list_users(db: DbSession, user: PublisherUser) -> list[User]:
-    return db.query(User).order_by(User.name).all()
+def list_users(db: DbSession, user: PublisherUser) -> list[UserOut]:
+    counts = dict(db.query(Post.author_id, func.count(Post.id)).group_by(Post.author_id).all())
+    users = db.query(User).order_by(User.name).all()
+    return [UserOut.model_validate(u).model_copy(update={"post_count": counts.get(u.id, 0)}) for u in users]
 
 
 @router.post("/users", response_model=UserOut, status_code=201)
@@ -183,14 +185,38 @@ async def update_user(db: DbSession, current: CurrentUser, user_id: int, payload
 
 
 @router.delete("/users/{user_id}", status_code=204)
-def delete_user(db: DbSession, admin: AdminUser, user_id: int) -> None:
+async def delete_user(
+    db: DbSession,
+    admin: AdminUser,
+    user_id: int,
+    reassign_to: int | None = Query(None, description="Who takes over this member's articles"),
+) -> None:
+    """Delete a team member. Their articles move to `reassign_to` first, so no
+    published story loses its byline."""
     if admin.id == user_id:
         raise HTTPException(status_code=400, detail="You cannot delete your own account")
     target = db.get(User, user_id)
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
-    target.is_active = False  # keep byline history intact
+
+    post_count = db.query(func.count(Post.id)).filter(Post.author_id == user_id).scalar() or 0
+    if post_count:
+        heir = db.get(User, reassign_to) if reassign_to else None
+        if not heir or heir.id == user_id:
+            raise HTTPException(
+                status_code=409,
+                detail=f"{target.name} has {post_count} article(s). Choose who should take them over.",
+            )
+        db.query(Post).filter(Post.author_id == user_id).update(
+            {Post.author_id: heir.id}, synchronize_session=False
+        )
+    db.query(Media).filter(Media.uploaded_by == user_id).update(
+        {Media.uploaded_by: None}, synchronize_session=False
+    )
+    slug = target.slug
+    db.delete(target)
     db.commit()
+    await revalidate_frontend([f"/author/{slug}"], tags=["content", "authors"])
 
 
 # ---------------- Media library ----------------

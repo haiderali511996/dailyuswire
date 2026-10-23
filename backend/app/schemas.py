@@ -82,6 +82,7 @@ class UserOut(ORMModel):
     linkedin: str = ""
     profile_name: str = ""
     is_active: bool = True
+    post_count: int = 0
 
 
 class AuthorPublic(ORMModel):

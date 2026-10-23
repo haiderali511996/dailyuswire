@@ -26,6 +26,8 @@ export default function UsersPage() {
   const [editing, setEditing] = useState<User | null>(null);
   const [busy, setBusy] = useState(false);
   const [pickingPhoto, setPickingPhoto] = useState(false);
+  const [deleting, setDeleting] = useState<User | null>(null);
+  const [heirId, setHeirId] = useState<number | ''>('');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -47,6 +49,34 @@ export default function UsersPage() {
   function cancel() {
     setEditing(null);
     setDraft({ ...BLANK });
+  }
+
+  function startDelete(user: User) {
+    setDeleting(user);
+    const others = users.filter((u) => u.id !== user.id && u.is_active);
+    // Default to the desk byline, then any other author, then whoever is deleting.
+    const heir =
+      others.find((u) => u.slug === 'daily-us-wire-staff') ??
+      others.find((u) => u.role === 'author') ??
+      others.find((u) => u.id === me?.id) ??
+      others[0];
+    setHeirId(heir?.id ?? '');
+  }
+
+  async function confirmDelete() {
+    if (!deleting) return;
+    setBusy(true);
+    try {
+      await adminApi.deleteUser(deleting.id, deleting.post_count ? Number(heirId) || undefined : undefined);
+      push('success', `${deleting.name} was deleted.`);
+      if (editing?.id === deleting.id) cancel();
+      setDeleting(null);
+      load();
+    } catch (err) {
+      push('error', err instanceof Error ? err.message : 'Delete failed');
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function submit(e: React.FormEvent) {
@@ -206,14 +236,73 @@ export default function UsersPage() {
                 )}
               </p>
               {user.bio && <p className="clamp-3 mt-2 text-xs text-ink-muted">{user.bio}</p>}
-              {(isAdmin || user.id === me?.id) && (
-                <button type="button" onClick={() => startEdit(user)} className="btn-ghost btn-sm mt-3 w-full">
-                  Edit
-                </button>
+              {user.post_count !== undefined && (
+                <p className="mt-2 text-xs text-ink-faint">
+                  {user.post_count} article{user.post_count === 1 ? '' : 's'}
+                </p>
               )}
+              <div className="mt-3 flex gap-2">
+                {(isAdmin || user.id === me?.id) && (
+                  <button type="button" onClick={() => startEdit(user)} className="btn-ghost btn-sm flex-1">
+                    Edit
+                  </button>
+                )}
+                {isAdmin && user.id !== me?.id && (
+                  <button
+                    type="button"
+                    onClick={() => startDelete(user)}
+                    className="btn btn-sm flex-1 border border-flag-200 bg-white text-flag-700 hover:bg-flag-50"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
+      )}
+
+      {deleting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/50 px-4" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+          <div className="card w-full max-w-md space-y-4 p-6">
+            <h2 id="delete-title" className="font-serif text-xl font-bold text-navy-900">Delete {deleting.name}?</h2>
+            <p className="text-sm text-ink-muted">
+              {deleting.name} ({deleting.email}) will no longer be able to sign in. This cannot be undone.
+            </p>
+            {deleting.post_count ? (
+              <div>
+                <label htmlFor="heir" className="label">
+                  Move their {deleting.post_count} article{deleting.post_count === 1 ? '' : 's'} to
+                </label>
+                <select id="heir" value={heirId} onChange={(e) => setHeirId(Number(e.target.value) || '')} className="field">
+                  {users
+                    .filter((u) => u.id !== deleting.id && u.is_active)
+                    .map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name} ({u.role})
+                      </option>
+                    ))}
+                </select>
+                <p className="hint">The articles stay published, under this person&apos;s byline.</p>
+              </div>
+            ) : (
+              <p className="text-sm text-ink-muted">They have no articles.</p>
+            )}
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setDeleting(null)} disabled={busy} className="btn-ghost btn-sm">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={busy || (!!deleting.post_count && !heirId)}
+                className="btn-accent btn-sm"
+              >
+                {busy ? 'Deleting...' : 'Delete member'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <MediaPicker
