@@ -33,7 +33,7 @@ function PostsList() {
   const params = useSearchParams();
   const { push } = useToast();
   const { can } = useAuth();
-  const canPublish = can('admin', 'editor');
+  const canPublish = can('admin', 'author');
 
   const [data, setData] = useState<Paginated<Post> | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -112,7 +112,7 @@ function PostsList() {
           <p className="mt-1 text-xs text-ink-faint">
             {canPublish
               ? "Authors' drafts wait for your review: open a draft, check it, then click Publish to approve it."
-              : 'Your articles stay as drafts until an editor checks and approves them.'}
+              : 'Your articles stay as drafts until an author checks and approves them.'}
           </p>
         </div>
         <Link href="/admin/posts/new" className="btn-accent btn-sm">

@@ -87,7 +87,7 @@ export function PostEditor({ postId }: { postId?: number }) {
   // Load reference data + the post being edited.
   useEffect(() => {
     adminApi.listCategories().then(setCategories).catch(() => {});
-    if (can('admin', 'editor')) adminApi.listUsers().then(setAuthors).catch(() => {});
+    if (can('admin', 'author')) adminApi.listUsers().then(setAuthors).catch(() => {});
   }, [can]);
 
   useEffect(() => {
@@ -107,8 +107,8 @@ export function PostEditor({ postId }: { postId?: number }) {
     if (!slugTouched && form.title) set('slug', slugify(form.title));
   }, [form.title, slugTouched, set]);
 
-  // Authors write and submit; an editor or admin reviews and publishes.
-  const canPublish = can('admin', 'editor');
+  // Editors write and submit; an author or admin reviews and publishes.
+  const canPublish = can('admin', 'author');
   const lockedForAuthor = !canPublish && (form.status === 'published' || form.status === 'scheduled');
 
   async function save(nextStatus?: PostStatus) {
@@ -217,7 +217,7 @@ export function PostEditor({ postId }: { postId?: number }) {
           )}
           {lockedForAuthor ? (
             <p className="max-w-xs text-xs text-ink-muted">
-              Approved by an editor. Ask an editor if this article needs changes.
+              Approved by an author. Ask an author if this article needs changes.
             </p>
           ) : !canPublish ? (
             <button type="button" onClick={() => save('draft')} disabled={saving} className="btn-accent btn-sm">
@@ -456,7 +456,7 @@ export function PostEditor({ postId }: { postId?: number }) {
                   </select>
                 </div>
 
-                {can('admin', 'editor') && (
+                {can('admin', 'author') && (
                   <div>
                     <label htmlFor="author" className="label">
                       Byline
@@ -676,7 +676,7 @@ function toForm(post: Post): FormState {
   };
 }
 
-const SUBMITTED = 'Saved and sent for review. An editor will check and approve it before it goes live.';
+const SUBMITTED = 'Saved and sent for review. An author will check and approve it before it goes live.';
 
 function savedMessage(status: PostStatus, publishedAt: string, fallback: string): string {
   if (status === 'published') return 'Article published.';

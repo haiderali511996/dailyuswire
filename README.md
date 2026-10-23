@@ -148,7 +148,7 @@ backend/
     models.py          Users, categories, posts, images, media, settings
     schemas.py         Pydantic v2 request/response models
     bootstrap.py       First-run: tables, 8 categories, admin user
-    deps.py            JWT auth + role guards (admin / editor / author)
+    deps.py            JWT auth + role guards (admin / author / editor)
     routers/           auth · public · admin_posts · admin_misc · feeds_public
     services/          posts.py (write path, ISR webhook)
     utils/             security · text (sanitise, slugs, SEO score) · images · seo (JSON-LD)

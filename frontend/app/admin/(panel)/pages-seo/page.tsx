@@ -43,7 +43,7 @@ export default function PagesSeoPage() {
 
   if (loading) return <p className="text-sm text-ink-muted">Loading...</p>;
 
-  const readOnly = !can('editor', 'admin');
+  const readOnly = !can('author', 'admin');
 
   return (
     <div className="space-y-5">

@@ -52,7 +52,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(120))
     slug: Mapped[str] = mapped_column(String(140), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
-    role: Mapped[Role] = mapped_column(Enum(Role), default=Role.author)
+    role: Mapped[Role] = mapped_column(Enum(Role), default=Role.editor)
     bio: Mapped[str] = mapped_column(Text, default="")
     avatar: Mapped[str] = mapped_column(String(500), default="")
     twitter: Mapped[str] = mapped_column(String(120), default="")
