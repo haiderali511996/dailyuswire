@@ -15,7 +15,7 @@ export default function EditorialPolicyPage() {
     <Prose title="Editorial Policy" updated="October 23, 2026">
       <p>
         This page sets out how {SITE_NAME} produces its journalism. It is a working standard our
-        author holds every article to, not a marketing statement.
+        editors and author hold every article to, not a marketing statement.
       </p>
 
       <h2>Originality</h2>
@@ -40,9 +40,23 @@ export default function EditorialPolicyPage() {
 
       <h2>Review, approval and publication</h2>
       <p>
-        Articles are reviewed, approved and published by our author. Nothing goes live until the
-        author has read it, checked its facts and sources, and approved it for publication. The
-        author is responsible for the accuracy of every published article and for any corrections.
+        Every article goes through two steps before it reaches readers:
+      </p>
+      <ol>
+        <li>
+          <strong>Editor submits for review.</strong> Our editors write and research articles and
+          submit them for review. An editor cannot publish an article.
+        </li>
+        <li>
+          <strong>Author approves and publishes.</strong> Our author reads each submitted article,
+          checks its facts and sources, and either sends it back for changes or approves and
+          publishes it.
+        </li>
+      </ol>
+      <p>
+        Nothing goes live until the author has approved it. Once an article is published, only the
+        author can change it. The author is responsible for the accuracy of every published article
+        and for any corrections.
       </p>
 
       <h2>AI use</h2>

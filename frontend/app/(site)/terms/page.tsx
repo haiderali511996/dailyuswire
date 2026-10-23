@@ -34,9 +34,10 @@ export default function TermsPage() {
 
       <h2>Content approval and responsibility</h2>
       <p>
-        Every article on {SITE_NAME} is reviewed, approved and published by our author. The author
-        decides what is published and is responsible for the accuracy of published content and for
-        any corrections. Requests about a published article, including corrections and removal
+        Articles on {SITE_NAME} are written by our editors and submitted for review. Our author
+        reviews each submitted article, approves it and publishes it; editors cannot publish an
+        article themselves. The author decides what is published and is responsible for the
+        accuracy of published content and for any corrections. Requests about a published article, including corrections and removal
         requests, should be sent to <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>{' '}
         and are handled by the author.
       </p>
@@ -44,8 +45,8 @@ export default function TermsPage() {
       <h2>User submissions</h2>
       <p>
         If you send us a tip, letter or comment, you grant us a non-exclusive, royalty-free licence
-        to publish and edit it. Submissions are reviewed by our author, who decides whether and how
-        they are published. Do not send us anything you do not have the right to share.
+        to publish and edit it. Submissions are reviewed by our author, who alone decides whether
+        and how they are published. Do not send us anything you do not have the right to share.
       </p>
 
       <h2>Third-party links</h2>
