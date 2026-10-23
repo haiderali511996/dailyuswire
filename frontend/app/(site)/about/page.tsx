@@ -37,11 +37,11 @@ export default function AboutPage() {
       <h2>Bylines and editorial responsibility</h2>
       <p>
         Most articles are published under the &ldquo;{SITE_NAME} Staff&rdquo; desk byline. A desk
-        byline does not mean nobody is accountable: every story is reviewed by an editor before it
-        is published, and the editor is responsible for its accuracy and for any corrections. The
-        editor&apos;s name and background are listed on the{' '}
+        byline does not mean nobody is accountable: every story is reviewed and approved by our
+        author before it is published, and the author is responsible for its accuracy and for any
+        corrections. The author&apos;s name and background are listed on the{' '}
         <Link href="/author/daily-us-wire-staff">{SITE_NAME} Staff</Link> author page. To reach the
-        editor directly, write to <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>.
+        author directly, write to <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>.
       </p>
 
       <h2>How we work</h2>

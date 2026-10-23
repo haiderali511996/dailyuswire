@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 
 export default function EditorialPolicyPage() {
   return (
-    <Prose title="Editorial Policy" updated="September 14, 2026">
+    <Prose title="Editorial Policy" updated="October 23, 2026">
       <p>
         This page sets out how {SITE_NAME} produces its journalism. It is a working standard our
-        editors hold each other to, not a marketing statement.
+        author holds every article to, not a marketing statement.
       </p>
 
       <h2>Originality</h2>
@@ -38,11 +38,18 @@ export default function EditorialPolicyPage() {
         pages list what each writer covers.
       </p>
 
+      <h2>Review, approval and publication</h2>
+      <p>
+        Articles are reviewed, approved and published by our author. Nothing goes live until the
+        author has read it, checked its facts and sources, and approved it for publication. The
+        author is responsible for the accuracy of every published article and for any corrections.
+      </p>
+
       <h2>AI use</h2>
       <p>
         We may use software to help monitor wire feeds, transcribe audio or suggest headlines. No
-        article is published without a human editor reading, verifying and taking responsibility for
-        it. We do not publish machine-generated text as reporting.
+        article is published without our author reading, verifying, approving and taking
+        responsibility for it. We do not publish machine-generated text as reporting.
       </p>
 
       <h2>Corrections</h2>

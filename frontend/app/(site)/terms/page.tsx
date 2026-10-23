@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <Prose title="Terms of Service" updated="September 14, 2026">
+    <Prose title="Terms of Service" updated="October 23, 2026">
       <p>
         These terms govern your use of {SITE_NAME}. By accessing the site you accept them. If you do
         not agree, please do not use the site.
@@ -32,10 +32,20 @@ export default function TermsPage() {
         clear attribution and a link back are welcome.
       </p>
 
+      <h2>Content approval and responsibility</h2>
+      <p>
+        Every article on {SITE_NAME} is reviewed, approved and published by our author. The author
+        decides what is published and is responsible for the accuracy of published content and for
+        any corrections. Requests about a published article, including corrections and removal
+        requests, should be sent to <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>{' '}
+        and are handled by the author.
+      </p>
+
       <h2>User submissions</h2>
       <p>
         If you send us a tip, letter or comment, you grant us a non-exclusive, royalty-free licence
-        to publish and edit it. Do not send us anything you do not have the right to share.
+        to publish and edit it. Submissions are reviewed by our author, who decides whether and how
+        they are published. Do not send us anything you do not have the right to share.
       </p>
 
       <h2>Third-party links</h2>
