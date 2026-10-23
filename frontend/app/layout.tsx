@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Playfair_Display, Source_Sans_3 } from 'next/font/google';
+import localFont from 'next/font/local';
 
 import { Analytics } from '@/components/site/Analytics';
 import { JsonLd } from '@/components/site/JsonLd';
@@ -8,17 +8,19 @@ import { getSiteSettings } from '@/lib/site-settings';
 
 import './globals.css';
 
-const display = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['600', '700', '800'],
+// Fonts are self-hosted (latin subset, variable weight) so the build never
+// depends on reaching Google Fonts.
+const display = localFont({
+  src: './fonts/playfair-display-latin-wght-normal.woff2',
+  weight: '400 900',
   variable: '--font-display',
   display: 'swap',
   fallback: ['Georgia', 'Times New Roman', 'serif'],
 });
 
-const body = Source_Sans_3({
-  subsets: ['latin'],
-  weight: ['400', '600', '700'],
+const body = localFont({
+  src: './fonts/source-sans-3-latin-wght-normal.woff2',
+  weight: '200 900',
   variable: '--font-body',
   display: 'swap',
   fallback: ['system-ui', 'Segoe UI', 'sans-serif'],
