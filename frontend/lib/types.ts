@@ -101,6 +101,7 @@ export interface User {
   linkedin: string;
   profile_name?: string;
   is_active: boolean;
+  post_count?: number;
 }
 
 export interface MediaItem {

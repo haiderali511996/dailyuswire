@@ -136,6 +136,8 @@ export const adminApi = {
     request<User>('/api/admin/users', { method: 'POST', body: JSON.stringify(body) }),
   updateUser: (id: number, body: unknown) =>
     request<User>(`/api/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteUser: (id: number, reassignTo?: number) =>
+    request<void>(`/api/admin/users/${id}${reassignTo ? `?reassign_to=${reassignTo}` : ''}`, { method: 'DELETE' }),
 
   listMedia: (page = 1) => request<MediaItem[]>(`/api/admin/media?page=${page}&per_page=60`),
   uploadMedia: (file: File, alt = '') => {
