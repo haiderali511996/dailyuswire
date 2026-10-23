@@ -22,8 +22,8 @@ export default function PrivacyPage() {
       <h2>Information we collect</h2>
       <ul>
         <li>
-          <strong>Information you give us.</strong> Your email address if you subscribe to our
-          newsletter, and anything you include when you email us or our author.
+          <strong>Information you give us.</strong> Anything you include when you email us or our
+          author, such as your name and email address.
         </li>
         <li>
           <strong>Information collected automatically.</strong> Standard server and analytics data:
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
       <h2>How we use your information</h2>
       <ul>
         <li>To deliver and improve the website and its content.</li>
-        <li>To send the newsletter you asked for (you can unsubscribe from any issue).</li>
+        <li>To reply to messages you send us.</li>
         <li>To measure audience size and reading patterns in aggregate.</li>
         <li>To serve and measure advertising.</li>
         <li>To detect abuse, fraud and security incidents.</li>
@@ -117,9 +117,9 @@ export default function PrivacyPage() {
 
       <h2>Data retention and security</h2>
       <p>
-        We keep newsletter subscriptions until you unsubscribe, and analytics data for no longer than
-        26 months. Data is transmitted over HTTPS and access is limited to our author, our editors and the staff
-        who need it.
+        We keep emails you send us only as long as needed to handle them, and analytics data for
+        no longer than 26 months. Data is transmitted over HTTPS and access is limited to our
+        author, our editors and the staff who need it.
       </p>
 
       <h2>Changes to this policy</h2>

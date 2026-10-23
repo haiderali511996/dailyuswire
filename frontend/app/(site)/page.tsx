@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 
 import { AdSlot } from '@/components/site/AdSlot';
-import { NewsletterForm } from '@/components/site/NewsletterForm';
 import { HeroSlider } from '@/components/site/HeroSlider';
 import { FeatureCard, HeroCard, ListCard, StandardCard } from '@/components/site/PostCard';
 import { SectionHeading } from '@/components/site/SectionHeading';
@@ -90,29 +89,6 @@ export default async function HomePage() {
           </Suspense>
         ))}
       </div>
-
-      {/* Newsletter */}
-      <section
-        id="newsletter"
-        className="mt-16 overflow-hidden rounded-xl bg-navy-900 px-6 py-10 sm:px-10"
-        aria-labelledby="newsletter-heading"
-      >
-        <div className="grid items-center gap-6 md:grid-cols-2">
-          <div>
-            <p className="kicker text-flag-300">Newsletter</p>
-            <h2 id="newsletter-heading" className="mt-2 font-serif text-2xl font-bold text-white sm:text-3xl">
-              The Morning Wire
-            </h2>
-            <p className="mt-2 max-w-md text-sm leading-relaxed text-navy-200">
-              Everything that matters from across our eight desks, condensed into one email
-              before 7am. Free, and you can unsubscribe with one click.
-            </p>
-          </div>
-          <div className="md:justify-self-end md:w-80">
-            <NewsletterForm />
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

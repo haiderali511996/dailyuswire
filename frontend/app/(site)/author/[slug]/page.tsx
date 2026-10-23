@@ -6,6 +6,7 @@ import { JsonLd } from '@/components/site/JsonLd';
 import { Pagination } from '@/components/site/Pagination';
 import { StandardCard } from '@/components/site/PostCard';
 import { getAuthor, getPosts } from '@/lib/api';
+import { authorBio } from '@/lib/author';
 import { SITE_NAME, SITE_URL } from '@/lib/config';
 
 export const revalidate = 300;
@@ -18,9 +19,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!author) return { title: 'Author not found', robots: { index: false, follow: false } };
   return {
     title: `${author.name} - Author`,
-    description: author.bio || `Articles written by ${author.name} for ${SITE_NAME}.`,
+    description: authorBio(author.bio),
     alternates: { canonical: `/author/${slug}` },
-    openGraph: { type: 'profile', title: author.name, description: author.bio },
+    openGraph: { type: 'profile', title: author.name, description: authorBio(author.bio) },
   };
 }
 
@@ -43,7 +44,7 @@ export default async function AuthorPage({ params, searchParams }: Props) {
           mainEntity: {
             '@type': 'Person',
             name: author.name,
-            description: author.bio,
+            description: authorBio(author.bio),
             url: `${SITE_URL}/author/${slug}`,
             worksFor: { '@id': `${SITE_URL}/#organization` },
           },
@@ -60,7 +61,7 @@ export default async function AuthorPage({ params, searchParams }: Props) {
         </div>
         <div>
           <h1 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">{author.name}</h1>
-          {author.bio && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">{author.bio}</p>}
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">{authorBio(author.bio)}</p>
           <p className="mt-2 text-xs text-ink-faint">
             {data.total} published article{data.total === 1 ? '' : 's'}
           </p>
