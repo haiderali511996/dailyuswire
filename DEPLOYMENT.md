@@ -398,6 +398,14 @@ variable, re-run the deploy; editing it in cPanel alone will not help. A build
 that would hit this now fails on purpose with a message naming both URLs.
 
 **The admin password does not work**
+Use **Forgot password?** on the sign-in page: it emails a reset link (valid for
+30 minutes, works once) to the account's address. Mail goes out through the
+server's sendmail by default. If it never arrives, check spam, then create a
+mailbox such as `no-reply@yourdomain.com` in cPanel and add `SMTP_HOST`,
+`SMTP_PORT` (465), `SMTP_USER`, `SMTP_PASSWORD` and `MAIL_FROM` to the Python
+app's environment variables.
+
+Without email access, reset it from the server instead.
 `ADMIN_PASSWORD` is only applied when the admin account is first created —
 bootstrap leaves an existing account untouched, so editing that variable later
 changes nothing. Reset it directly:

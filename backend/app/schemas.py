@@ -32,6 +32,15 @@ class LoginIn(BaseModel):
     password: str
 
 
+class ForgotPasswordIn(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordIn(BaseModel):
+    token: str = Field(min_length=10, max_length=2000)
+    password: str = Field(min_length=8, max_length=128)
+
+
 class UserBase(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     email: EmailStr
