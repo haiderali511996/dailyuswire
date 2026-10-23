@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 
 import { AdSlot } from '@/components/site/AdSlot';
+import { AuthorAvatar, AuthorLinks } from '@/components/site/AuthorAvatar';
 import { ArticleBody } from '@/components/site/ArticleBody';
 import { Breadcrumbs } from '@/components/site/Breadcrumbs';
 import { JsonLd } from '@/components/site/JsonLd';
@@ -216,12 +217,7 @@ export default async function ArticlePage({ params }: Props) {
                 aria-label="About the author"
                 className="mt-8 flex gap-4 rounded-lg border border-rule bg-wash p-5"
               >
-                <div
-                  aria-hidden
-                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-navy-800 font-serif text-xl font-bold text-white"
-                >
-                  {post.author.name.slice(0, 1)}
-                </div>
+                <AuthorAvatar author={post.author} size="md" />
                 <div>
                   <p className="kicker text-ink-faint">About the author</p>
                   <p className="mt-1 font-serif text-lg font-bold text-navy-900">
@@ -230,6 +226,7 @@ export default async function ArticlePage({ params }: Props) {
                     </Link>
                   </p>
                   <p className="mt-1 text-sm leading-relaxed text-ink-muted">{authorBio(post.author.bio)}</p>
+                  <AuthorLinks author={post.author} />
                   <Link
                     href={`/author/${post.author.slug}`}
                     className="mt-2 inline-block text-sm font-semibold text-navy-800 hover:underline"

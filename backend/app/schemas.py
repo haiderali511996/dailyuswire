@@ -47,6 +47,7 @@ class UserBase(BaseModel):
     bio: str = ""
     avatar: str = ""
     twitter: str = ""
+    linkedin: str = Field(default="", max_length=300)
     role: Role = Role.editor
     is_active: bool = True
 
@@ -61,6 +62,7 @@ class UserUpdate(BaseModel):
     bio: str | None = None
     avatar: str | None = None
     twitter: str | None = None
+    linkedin: str | None = Field(default=None, max_length=300)
     role: Role | None = None
     is_active: bool | None = None
     password: str | None = Field(default=None, min_length=8, max_length=128)
@@ -75,6 +77,7 @@ class UserOut(ORMModel):
     bio: str = ""
     avatar: str = ""
     twitter: str = ""
+    linkedin: str = ""
     is_active: bool = True
 
 
@@ -85,6 +88,7 @@ class AuthorPublic(ORMModel):
     bio: str = ""
     avatar: str = ""
     twitter: str = ""
+    linkedin: str = ""
 
 
 # ---------------- Taxonomy ----------------

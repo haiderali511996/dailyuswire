@@ -51,6 +51,30 @@ _CHATGPT_UTM = r"utm_source=chatgpt\.com(?![\w.%-])"
 _AMP = r"(?:&amp;|&)"
 
 
+# Stock phrases that make an article read as AI-written meta-commentary rather
+# than reporting. Lower-case; matched against the article's plain text.
+AI_FILLER_PHRASES = (
+    "that distinction matters",
+    "this distinction matters",
+    "should remain clearly attributed",
+    "readers should distinguish",
+    "readers should note",
+    "readers should be aware",
+    "it is important to note",
+    "it's important to note",
+    "it is worth noting",
+    "it's worth noting",
+    "in today's fast-paced",
+    "in the ever-evolving",
+    "delve into",
+    "navigating the complexities",
+    "a testament to",
+    "plays a crucial role",
+    "in conclusion,",
+    "as an ai",
+)
+
+
 def strip_chatgpt_utm(text: str) -> str:
     if not text or "utm_source=chatgpt.com" not in text.lower():
         return text
@@ -200,10 +224,20 @@ def seo_score(
             f'"{focus_keyword}" should appear in the meta description.', 1)
         add(kw in " ".join(words[:60]).lower(), "Keyword in intro",
             "Mention the focus keyword in the first paragraph.", 1)
-        add(0.5 <= density <= 2.5, "Keyword density",
-            f"{density:.2f}% - keep it between 0.5% and 2.5%.", 1)
+        uses = lower_text.count(kw)
+        max_uses = max(4, word_count // 250)
+        add(0.5 <= density <= 2.5 and uses <= max_uses, "Keyword use",
+            f'"{focus_keyword}" appears {uses} time(s) ({density:.2f}%). Use it about '
+            f"2-{max_uses} times and write the rest naturally - repeating it reads as "
+            "keyword stuffing.", 1)
     else:
         add(False, "Focus keyword", "Set a focus keyword to unlock keyword checks.", 2)
+
+    filler = [p for p in AI_FILLER_PHRASES if p in lower_text]
+    add(not filler, "Natural writing",
+        "Rewrite or cut: " + "; ".join(f'"{p}"' for p in filler[:5])
+        + ". Lines that lecture the reader instead of reporting read as machine-written."
+        if filler else "No stock filler phrases found.", 2)
 
     total = sum(c["weight"] for c in checks)
     earned = sum(c["weight"] for c in checks if c["ok"])

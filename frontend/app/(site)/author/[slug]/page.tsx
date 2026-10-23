@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { AuthorAvatar, AuthorLinks } from '@/components/site/AuthorAvatar';
 import { Breadcrumbs } from '@/components/site/Breadcrumbs';
 import { JsonLd } from '@/components/site/JsonLd';
 import { Pagination } from '@/components/site/Pagination';
 import { StandardCard } from '@/components/site/PostCard';
 import { getAuthor, getPosts } from '@/lib/api';
 import { authorBio } from '@/lib/author';
-import { SITE_NAME, SITE_URL } from '@/lib/config';
+import { SITE_NAME, SITE_URL, absoluteMediaUrl } from '@/lib/config';
 
 export const revalidate = 300;
 
@@ -46,6 +47,8 @@ export default async function AuthorPage({ params, searchParams }: Props) {
             name: author.name,
             description: authorBio(author.bio),
             url: `${SITE_URL}/author/${slug}`,
+            ...(author.avatar ? { image: absoluteMediaUrl(author.avatar) } : {}),
+            ...(author.linkedin ? { sameAs: [author.linkedin] } : {}),
             worksFor: { '@id': `${SITE_URL}/#organization` },
           },
         }}
@@ -53,15 +56,11 @@ export default async function AuthorPage({ params, searchParams }: Props) {
       <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: author.name }]} className="mb-4" />
 
       <header className="flex flex-col gap-4 rounded-lg border border-rule bg-wash p-6 sm:flex-row sm:items-center">
-        <div
-          aria-hidden
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-navy-800 font-serif text-2xl font-bold text-white"
-        >
-          {author.name.slice(0, 1)}
-        </div>
+        <AuthorAvatar author={author} size="lg" />
         <div>
           <h1 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">{author.name}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">{authorBio(author.bio)}</p>
+          <AuthorLinks author={author} />
           <p className="mt-2 text-xs text-ink-faint">
             {data.total} published article{data.total === 1 ? '' : 's'}
           </p>

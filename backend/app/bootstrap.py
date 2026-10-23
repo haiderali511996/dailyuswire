@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -170,10 +171,45 @@ def ensure_settings(db: Session) -> None:
     db.commit()
 
 
+# Columns added to existing tables after launch. create_all() only creates
+# missing tables, so add these to databases that predate them.
+ADDED_COLUMNS: dict[str, dict[str, str]] = {
+    "users": {"linkedin": "VARCHAR(300) NOT NULL DEFAULT ''"},
+}
+
+
+def ensure_columns() -> None:
+    inspector = inspect(engine)
+    for table, columns in ADDED_COLUMNS.items():
+        existing = {c["name"] for c in inspector.get_columns(table)}
+        for name, ddl in columns.items():
+            if name not in existing:
+                with engine.begin() as conn:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+
+
+# LinkedIn profile for the desk byline, shown under every article. Applied
+# once (tracked in settings) so clearing or changing it in Team sticks.
+STAFF_AUTHOR_SLUG = "daily-us-wire-staff"
+STAFF_AUTHOR_LINKEDIN = "https://www.linkedin.com/in/ahmad-iftikhar/"
+_STAFF_LINKEDIN_FLAG = "seeded_staff_linkedin"
+
+
+def link_staff_author(db: Session) -> None:
+    if db.get(Setting, _STAFF_LINKEDIN_FLAG):
+        return
+    user = db.query(User).filter(User.slug == STAFF_AUTHOR_SLUG).one_or_none()
+    if user and not user.linkedin:
+        user.linkedin = STAFF_AUTHOR_LINKEDIN
+    db.add(Setting(key=_STAFF_LINKEDIN_FLAG, value="1"))
+    db.commit()
+
+
 def run() -> None:
     # Models are all imported by now, so every table is in the metadata.
     apply_mysql_table_options()
     Base.metadata.create_all(bind=engine)
+    ensure_columns()
     with SessionLocal() as db:
         remove_crypto(db)  # the Crypto desk was retired; see services/purge.py
         ensure_categories(db)
@@ -183,4 +219,5 @@ def run() -> None:
         reorder_categories(db)  # clears any duplicate nav orders saved earlier
         trim_breaking(db)
         strip_chatgpt_links(db)  # ChatGPT tracking tags on cited links
+        link_staff_author(db)
         db.commit()

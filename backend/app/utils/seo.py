@@ -144,6 +144,8 @@ def news_article(post: dict) -> dict:
             "@type": "Person",
             "name": (post.get("author") or {}).get("name", settings.site_name),
             "url": f"{site}/author/{(post.get('author') or {}).get('slug', '')}",
+            **({"sameAs": [post["author"]["linkedin"]]}
+               if (post.get("author") or {}).get("linkedin") else {}),
         },
         "publisher": organization(),
     }

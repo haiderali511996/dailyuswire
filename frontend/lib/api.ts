@@ -3,7 +3,7 @@
  * revalidate webhook can invalidate exactly the pages that changed (ISR).
  */
 import { API_INTERNAL, API_URL } from './config';
-import type { Category, Paginated, Post, PostCard, Tag } from './types';
+import type { Author, Category, Paginated, Post, PostCard, Tag } from './types';
 
 const REVALIDATE_SECONDS = 60;
 
@@ -83,7 +83,7 @@ export async function getTags(limit = 24): Promise<Tag[]> {
 }
 
 export async function getAuthor(slug: string) {
-  return api<{ id: number; name: string; slug: string; bio: string; avatar: string; twitter: string }>(
+  return api<Author>(
     `/api/authors/${encodeURIComponent(slug)}`,
     { revalidate: 900, tags: ['content', 'authors'] },
   );

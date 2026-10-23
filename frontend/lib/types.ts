@@ -22,6 +22,7 @@ export interface Author {
   bio: string;
   avatar: string;
   twitter: string;
+  linkedin: string;
 }
 
 export interface Tag {
@@ -96,6 +97,7 @@ export interface User {
   bio: string;
   avatar: string;
   twitter: string;
+  linkedin: string;
   is_active: boolean;
 }
 
