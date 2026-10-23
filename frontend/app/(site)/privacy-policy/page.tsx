@@ -47,7 +47,9 @@ export default function PrivacyPage() {
       <h2>Who handles your information</h2>
       <p>
         Emails, tips, correction requests and other messages you send us are read and handled by our
-        author, who reviews, approves and publishes the articles on this site. We do not publish your
+        author, who reviews, approves and publishes the articles on this site. Our editors, who write
+        articles and submit them to the author for review, may see a message when it relates to a
+        story they are working on. We do not publish your
         name, email address or other personal details from a message without your permission.
       </p>
 
@@ -116,7 +118,7 @@ export default function PrivacyPage() {
       <h2>Data retention and security</h2>
       <p>
         We keep newsletter subscriptions until you unsubscribe, and analytics data for no longer than
-        26 months. Data is transmitted over HTTPS and access is limited to our author and the staff
+        26 months. Data is transmitted over HTTPS and access is limited to our author, our editors and the staff
         who need it.
       </p>
 

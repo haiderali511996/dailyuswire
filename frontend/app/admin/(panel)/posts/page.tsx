@@ -111,7 +111,7 @@ function PostsList() {
           <p className="mt-1 text-sm text-ink-muted">{data?.total ?? 0} total</p>
           <p className="mt-1 text-xs text-ink-faint">
             {canPublish
-              ? "Authors' drafts wait for your review: open a draft, check it, then click Publish to approve it."
+              ? "Editors' submitted drafts wait for your review: open a draft, check it, then click Publish to approve it."
               : 'Your articles stay as drafts until an author checks and approves them.'}
           </p>
         </div>
