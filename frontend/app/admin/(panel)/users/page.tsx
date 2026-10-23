@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { MediaPicker } from '@/components/admin/MediaPicker';
 import { useToast } from '@/components/admin/Toast';
 import { adminApi } from '@/lib/admin-api';
 import { useAuth } from '@/lib/auth-context';
-import type { Role, User } from '@/lib/types';
+import { mediaUrl } from '@/lib/config';
+import type { MediaItem, Role, User } from '@/lib/types';
 
-const BLANK = { name: '', email: '', password: '', role: 'editor' as Role, bio: '', twitter: '', avatar: '', is_active: true };
+const BLANK = { name: '', email: '', password: '', role: 'editor' as Role, bio: '', twitter: '', linkedin: '', avatar: '', is_active: true };
 
 const ROLE_HINTS: Record<Role, string> = {
   admin: 'Full access: team, settings, everything.',
@@ -23,6 +25,7 @@ export default function UsersPage() {
   const [draft, setDraft] = useState({ ...BLANK });
   const [editing, setEditing] = useState<User | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pickingPhoto, setPickingPhoto] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -37,7 +40,7 @@ export default function UsersPage() {
 
   function startEdit(user: User) {
     setEditing(user);
-    setDraft({ ...BLANK, name: user.name, email: user.email, role: user.role, bio: user.bio, twitter: user.twitter, avatar: user.avatar, is_active: user.is_active });
+    setDraft({ ...BLANK, name: user.name, email: user.email, role: user.role, bio: user.bio, twitter: user.twitter, linkedin: user.linkedin || '', avatar: user.avatar, is_active: user.is_active });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -132,8 +135,27 @@ export default function UsersPage() {
           </div>
 
           <div>
-            <label htmlFor="u-twitter" className="label">X / Twitter handle <span className="font-normal text-ink-faint">(optional)</span></label>
-            <input id="u-twitter" value={draft.twitter} onChange={(e) => setDraft({ ...draft, twitter: e.target.value })} placeholder="@handle" className="field" />
+            <label htmlFor="u-avatar" className="label">Photo <span className="font-normal text-ink-faint">(optional)</span></label>
+            <div className="flex items-center gap-3">
+              {draft.avatar && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={mediaUrl(draft.avatar)} alt="" className="h-12 w-12 shrink-0 rounded-full border border-rule object-cover" />
+              )}
+              <input id="u-avatar" value={draft.avatar} onChange={(e) => setDraft({ ...draft, avatar: e.target.value })} placeholder="Choose from the library or paste an image URL" className="field" />
+              <button type="button" onClick={() => setPickingPhoto(true)} className="btn-ghost btn-sm shrink-0">Choose</button>
+            </div>
+            <p className="hint">A real headshot, shown on the author page and under every article.</p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="u-linkedin" className="label">LinkedIn URL <span className="font-normal text-ink-faint">(optional)</span></label>
+              <input id="u-linkedin" type="url" value={draft.linkedin} onChange={(e) => setDraft({ ...draft, linkedin: e.target.value })} placeholder="https://www.linkedin.com/in/your-name" className="field" />
+            </div>
+            <div>
+              <label htmlFor="u-twitter" className="label">X / Twitter handle <span className="font-normal text-ink-faint">(optional)</span></label>
+              <input id="u-twitter" value={draft.twitter} onChange={(e) => setDraft({ ...draft, twitter: e.target.value })} placeholder="@handle" className="field" />
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -156,9 +178,14 @@ export default function UsersPage() {
           {users.map((user) => (
             <li key={user.id} className="card p-4">
               <div className="flex items-center gap-3">
-                <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy-800 font-serif font-bold text-white">
-                  {user.name.slice(0, 1)}
-                </span>
+                {user.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={mediaUrl(user.avatar)} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                ) : (
+                  <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy-800 font-serif font-bold text-white">
+                    {user.name.slice(0, 1)}
+                  </span>
+                )}
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-navy-900">{user.name}</p>
                   <p className="truncate text-xs text-ink-faint">{user.email}</p>
@@ -182,6 +209,12 @@ export default function UsersPage() {
           ))}
         </ul>
       )}
+
+      <MediaPicker
+        open={pickingPhoto}
+        onClose={() => setPickingPhoto(false)}
+        onSelect={(item: MediaItem) => setDraft((d) => ({ ...d, avatar: item.url }))}
+      />
     </div>
   );
 }

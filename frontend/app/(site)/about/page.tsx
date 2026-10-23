@@ -39,9 +39,10 @@ export default function AboutPage() {
         Most articles are published under the &ldquo;{SITE_NAME} Staff&rdquo; desk byline. A desk
         byline does not mean nobody is accountable: our editors write each story and submit it for
         review, and our author reviews, approves and publishes it. The author is responsible for its
-        accuracy and for any corrections. The author&apos;s name and background are listed on the{' '}
-        <Link href="/author/daily-us-wire-staff">{SITE_NAME} Staff</Link> author page. To reach the
-        author directly, write to <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>.
+        accuracy and for any corrections. Every article ends with an &ldquo;About the author&rdquo;
+        note, and all of an author&apos;s work is collected on their author page, such as{' '}
+        <Link href="/author/daily-us-wire-staff">{SITE_NAME} Staff</Link>. To reach the author,
+        write to <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>.
       </p>
 
       <h2>How we work</h2>

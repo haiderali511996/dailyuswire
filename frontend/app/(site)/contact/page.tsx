@@ -17,7 +17,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const DESKS = [
   { label: 'Information', email: 'info@dailyuswire.com', note: 'General information about Daily US Wire and our coverage.' },
-  { label: 'Author (direct)', email: 'iftikharloona1@gmail.com', note: 'Direct line to the author for urgent or private matters.' },
 ];
 
 export default function ContactPage() {
