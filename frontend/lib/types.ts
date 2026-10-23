@@ -23,6 +23,7 @@ export interface Author {
   avatar: string;
   twitter: string;
   linkedin: string;
+  profile_name?: string;
 }
 
 export interface Tag {
@@ -98,6 +99,7 @@ export interface User {
   avatar: string;
   twitter: string;
   linkedin: string;
+  profile_name?: string;
   is_active: boolean;
 }
 

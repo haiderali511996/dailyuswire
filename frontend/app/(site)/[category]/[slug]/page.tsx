@@ -225,6 +225,11 @@ export default async function ArticlePage({ params }: Props) {
                       {post.author.name}
                     </Link>
                   </p>
+                  {post.author.profile_name && post.author.profile_name !== post.author.name && (
+                    <p className="text-sm font-semibold text-ink-muted">
+                      Reviewed and published by {post.author.profile_name}
+                    </p>
+                  )}
                   <p className="mt-1 text-sm leading-relaxed text-ink-muted">{authorBio(post.author.bio)}</p>
                   <AuthorLinks author={post.author} />
                   <Link
