@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <Prose title="Privacy Policy" updated="September 14, 2026">
+    <Prose title="Privacy Policy" updated="October 23, 2026">
       <p>
         This policy explains what data {SITE_NAME} (&ldquo;we&rdquo;, &ldquo;us&rdquo;) collects when
         you visit this website, why we collect it, and the choices you have. By using the site you
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
       <ul>
         <li>
           <strong>Information you give us.</strong> Your email address if you subscribe to our
-          newsletter, and anything you include when you email one of our desks.
+          newsletter, and anything you include when you email us or our author.
         </li>
         <li>
           <strong>Information collected automatically.</strong> Standard server and analytics data:
@@ -43,6 +43,13 @@ export default function PrivacyPage() {
         <li>To serve and measure advertising.</li>
         <li>To detect abuse, fraud and security incidents.</li>
       </ul>
+
+      <h2>Who handles your information</h2>
+      <p>
+        Emails, tips, correction requests and other messages you send us are read and handled by our
+        author, who reviews, approves and publishes the articles on this site. We do not publish your
+        name, email address or other personal details from a message without your permission.
+      </p>
 
       <h2>Advertising and Google AdSense</h2>
       <p>
@@ -109,7 +116,8 @@ export default function PrivacyPage() {
       <h2>Data retention and security</h2>
       <p>
         We keep newsletter subscriptions until you unsubscribe, and analytics data for no longer than
-        26 months. Data is transmitted over HTTPS and access is limited to staff who need it.
+        26 months. Data is transmitted over HTTPS and access is limited to our author and the staff
+        who need it.
       </p>
 
       <h2>Changes to this policy</h2>
