@@ -57,6 +57,8 @@ class User(Base):
     avatar: Mapped[str] = mapped_column(String(500), default="")
     twitter: Mapped[str] = mapped_column(String(120), default="")
     linkedin: Mapped[str] = mapped_column(String(300), default="")
+    # The person's own name on their author page, when bylines use a desk name.
+    profile_name: Mapped[str] = mapped_column(String(120), default="")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 

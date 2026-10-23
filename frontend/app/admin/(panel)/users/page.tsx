@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth-context';
 import { mediaUrl } from '@/lib/config';
 import type { MediaItem, Role, User } from '@/lib/types';
 
-const BLANK = { name: '', email: '', password: '', role: 'editor' as Role, bio: '', twitter: '', linkedin: '', avatar: '', is_active: true };
+const BLANK = { name: '', email: '', password: '', role: 'editor' as Role, bio: '', twitter: '', linkedin: '', profile_name: '', avatar: '', is_active: true };
 
 const ROLE_HINTS: Record<Role, string> = {
   admin: 'Full access: team, settings, everything.',
@@ -40,7 +40,7 @@ export default function UsersPage() {
 
   function startEdit(user: User) {
     setEditing(user);
-    setDraft({ ...BLANK, name: user.name, email: user.email, role: user.role, bio: user.bio, twitter: user.twitter, linkedin: user.linkedin || '', avatar: user.avatar, is_active: user.is_active });
+    setDraft({ ...BLANK, name: user.name, email: user.email, role: user.role, bio: user.bio, twitter: user.twitter, linkedin: user.linkedin || '', profile_name: user.profile_name || '', avatar: user.avatar, is_active: user.is_active });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -132,6 +132,12 @@ export default function UsersPage() {
             <label htmlFor="u-bio" className="label">Bio <span className="font-normal text-ink-faint">(optional)</span></label>
             <textarea id="u-bio" rows={3} value={draft.bio} onChange={(e) => setDraft({ ...draft, bio: e.target.value })} className="field resize-y" placeholder="What this writer covers and their background. Shown on every article they write." />
             <p className="hint">A real, specific bio supports E-E-A-T and helps AdSense approval.</p>
+          </div>
+
+          <div>
+            <label htmlFor="u-profile-name" className="label">Name on author page <span className="font-normal text-ink-faint">(optional)</span></label>
+            <input id="u-profile-name" value={draft.profile_name} onChange={(e) => setDraft({ ...draft, profile_name: e.target.value })} placeholder="e.g. your real name" className="field" />
+            <p className="hint">Bylines on articles keep the Name above; the author page shows this instead.</p>
           </div>
 
           <div>

@@ -41,17 +41,6 @@ export default function ContactPage() {
           </div>
         ))}
       </div>
-
-      <h2>Postal address</h2>
-      <p>
-        {SITE_NAME} Editorial
-        <br />
-        680 Amboy Ave
-        <br />
-        Woodbridge, NJ 07095
-        <br />
-        United States
-      </p>
     </Prose>
   );
 }

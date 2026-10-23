@@ -174,7 +174,10 @@ def ensure_settings(db: Session) -> None:
 # Columns added to existing tables after launch. create_all() only creates
 # missing tables, so add these to databases that predate them.
 ADDED_COLUMNS: dict[str, dict[str, str]] = {
-    "users": {"linkedin": "VARCHAR(300) NOT NULL DEFAULT ''"},
+    "users": {
+        "linkedin": "VARCHAR(300) NOT NULL DEFAULT ''",
+        "profile_name": "VARCHAR(120) NOT NULL DEFAULT ''",
+    },
 }
 
 
@@ -188,20 +191,25 @@ def ensure_columns() -> None:
                     conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
 
 
-# LinkedIn profile for the desk byline, shown under every article. Applied
-# once (tracked in settings) so clearing or changing it in Team sticks.
+# The person behind the desk byline: articles stay "Daily US Wire Staff", the
+# author page names Ahmad Iftikhar with his photo and LinkedIn. Each step is
+# applied once (tracked in settings) so later edits in Team stick.
 STAFF_AUTHOR_SLUG = "daily-us-wire-staff"
-STAFF_AUTHOR_LINKEDIN = "https://www.linkedin.com/in/ahmad-iftikhar/"
-_STAFF_LINKEDIN_FLAG = "seeded_staff_linkedin"
+STAFF_PROFILE_STEPS: list[tuple[str, str, str]] = [
+    ("seeded_staff_linkedin", "linkedin", "https://www.linkedin.com/in/ahmad-iftikhar/"),
+    ("seeded_staff_profile_name", "profile_name", "Ahmad Iftikhar"),
+    ("seeded_staff_avatar", "avatar", "/authors/ahmad-iftikhar.jpg"),
+]
 
 
-def link_staff_author(db: Session) -> None:
-    if db.get(Setting, _STAFF_LINKEDIN_FLAG):
-        return
+def seed_staff_profile(db: Session) -> None:
     user = db.query(User).filter(User.slug == STAFF_AUTHOR_SLUG).one_or_none()
-    if user and not user.linkedin:
-        user.linkedin = STAFF_AUTHOR_LINKEDIN
-    db.add(Setting(key=_STAFF_LINKEDIN_FLAG, value="1"))
+    for flag, field, value in STAFF_PROFILE_STEPS:
+        if db.get(Setting, flag):
+            continue
+        if user and not getattr(user, field):
+            setattr(user, field, value)
+        db.add(Setting(key=flag, value="1"))
     db.commit()
 
 
@@ -219,5 +227,5 @@ def run() -> None:
         reorder_categories(db)  # clears any duplicate nav orders saved earlier
         trim_breaking(db)
         strip_chatgpt_links(db)  # ChatGPT tracking tags on cited links
-        link_staff_author(db)
+        seed_staff_profile(db)
         db.commit()

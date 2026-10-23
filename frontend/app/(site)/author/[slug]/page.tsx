@@ -18,11 +18,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const author = await getAuthor(slug);
   if (!author) return { title: 'Author not found', robots: { index: false, follow: false } };
+  const person = author.profile_name || author.name;
   return {
-    title: `${author.name} - Author`,
+    title: `${person} - Author`,
     description: authorBio(author.bio),
     alternates: { canonical: `/author/${slug}` },
-    openGraph: { type: 'profile', title: author.name, description: authorBio(author.bio) },
+    openGraph: { type: 'profile', title: person, description: authorBio(author.bio) },
   };
 }
 
@@ -35,6 +36,8 @@ export default async function AuthorPage({ params, searchParams }: Props) {
   if (!author) notFound();
 
   const data = await getPosts({ author: slug, page: pageNum, per_page: 12 });
+  // A desk byline (e.g. "Daily US Wire Staff") can name the real person here.
+  const person = author.profile_name || author.name;
 
   return (
     <div className="shell py-8">
@@ -44,7 +47,8 @@ export default async function AuthorPage({ params, searchParams }: Props) {
           '@type': 'ProfilePage',
           mainEntity: {
             '@type': 'Person',
-            name: author.name,
+            name: person,
+            ...(person !== author.name ? { alternateName: author.name } : {}),
             description: authorBio(author.bio),
             url: `${SITE_URL}/author/${slug}`,
             ...(author.avatar ? { image: absoluteMediaUrl(author.avatar) } : {}),
@@ -53,12 +57,15 @@ export default async function AuthorPage({ params, searchParams }: Props) {
           },
         }}
       />
-      <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: author.name }]} className="mb-4" />
+      <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: person }]} className="mb-4" />
 
       <header className="flex flex-col gap-4 rounded-lg border border-rule bg-wash p-6 sm:flex-row sm:items-center">
-        <AuthorAvatar author={author} size="lg" />
+        <AuthorAvatar author={{ ...author, name: person }} size="lg" />
         <div>
-          <h1 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">{author.name}</h1>
+          <h1 className="font-serif text-2xl font-bold text-navy-900 sm:text-3xl">{person}</h1>
+          {person !== author.name && (
+            <p className="mt-1 text-sm font-semibold text-ink-muted">Publishes as {author.name}</p>
+          )}
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">{authorBio(author.bio)}</p>
           <AuthorLinks author={author} />
           <p className="mt-2 text-xs text-ink-faint">
