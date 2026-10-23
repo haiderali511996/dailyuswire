@@ -93,6 +93,16 @@ export const adminApi = {
       body: JSON.stringify({ email, password }),
     }),
   me: () => request<User>('/api/auth/me'),
+  forgotPassword: (email: string) =>
+    request<{ detail: string }>('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+  resetPassword: (token: string, password: string) =>
+    request<{ detail: string }>('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    }),
 
   stats: () => request<DashboardStats>('/api/admin/stats'),
 

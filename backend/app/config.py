@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     admin_password: str = "ChangeMe123!"
     admin_name: str = "Site Admin"
 
+    # Outgoing mail (password reset). With SMTP_HOST blank, mail goes through the
+    # server's local sendmail, which cPanel hosts provide.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    mail_from: str = ""
+    password_reset_minutes: int = 30
+
     # Uploads
     media_dir: str = str(BASE_DIR / "media")
     max_upload_mb: int = 10
