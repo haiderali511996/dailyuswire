@@ -48,12 +48,13 @@ def require_roles(*roles: Role):
 
 
 require_admin = require_roles(Role.admin)
-require_editor = require_roles(Role.admin, Role.editor)
+# Authors approve and publish; editors write and send articles for approval.
+require_publisher = require_roles(Role.admin, Role.author)
 AdminUser = Annotated[User, Depends(require_admin)]
-EditorUser = Annotated[User, Depends(require_editor)]
+PublisherUser = Annotated[User, Depends(require_publisher)]
 
 
 def can_edit_post(user: User, post) -> bool:
-    if user.role in (Role.admin, Role.editor):
+    if user.role in (Role.admin, Role.author):
         return True
     return post.author_id == user.id

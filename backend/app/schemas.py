@@ -38,7 +38,7 @@ class UserBase(BaseModel):
     bio: str = ""
     avatar: str = ""
     twitter: str = ""
-    role: Role = Role.author
+    role: Role = Role.editor
     is_active: bool = True
 
 

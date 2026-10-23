@@ -7,12 +7,12 @@ import { adminApi } from '@/lib/admin-api';
 import { useAuth } from '@/lib/auth-context';
 import type { Role, User } from '@/lib/types';
 
-const BLANK = { name: '', email: '', password: '', role: 'author' as Role, bio: '', twitter: '', avatar: '', is_active: true };
+const BLANK = { name: '', email: '', password: '', role: 'editor' as Role, bio: '', twitter: '', avatar: '', is_active: true };
 
 const ROLE_HINTS: Record<Role, string> = {
   admin: 'Full access: team, settings, everything.',
-  editor: 'Publishes and edits any article, and manages categories.',
-  author: 'Writes and publishes their own articles only.',
+  author: 'Approves, publishes and edits any article, and manages categories.',
+  editor: 'Writes their own articles and sends them to an author for approval.',
 };
 
 export default function UsersPage() {
@@ -116,8 +116,8 @@ export default function UsersPage() {
               <div>
                 <label htmlFor="u-role" className="label">Role</label>
                 <select id="u-role" value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value as Role })} className="field">
-                  <option value="author">Author</option>
                   <option value="editor">Editor</option>
+                  <option value="author">Author</option>
                   <option value="admin">Admin</option>
                 </select>
                 <p className="hint">{ROLE_HINTS[draft.role]}</p>

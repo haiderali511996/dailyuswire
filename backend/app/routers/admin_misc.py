@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 from sqlalchemy import func
 
-from app.deps import AdminUser, CurrentUser, DbSession, EditorUser
+from app.deps import AdminUser, CurrentUser, DbSession, PublisherUser
 from app.models import (
     Category,
     Media,
@@ -83,7 +83,7 @@ def list_categories(db: DbSession, user: CurrentUser) -> list[Category]:
 
 
 @router.post("/categories", response_model=CategoryOut, status_code=201)
-async def create_category(db: DbSession, user: EditorUser, payload: CategoryCreate) -> Category:
+async def create_category(db: DbSession, user: PublisherUser, payload: CategoryCreate) -> Category:
     if db.query(Category).filter(Category.name == payload.name).one_or_none():
         raise HTTPException(status_code=409, detail="A category with that name already exists")
     data = payload.model_dump(exclude={"slug"})
@@ -99,7 +99,7 @@ async def create_category(db: DbSession, user: EditorUser, payload: CategoryCrea
 
 @router.patch("/categories/{category_id}", response_model=CategoryOut)
 async def update_category(
-    db: DbSession, user: EditorUser, category_id: int, payload: CategoryUpdate
+    db: DbSession, user: PublisherUser, category_id: int, payload: CategoryUpdate
 ) -> Category:
     category = db.get(Category, category_id)
     if not category:
@@ -135,7 +135,7 @@ async def delete_category(db: DbSession, user: AdminUser, category_id: int) -> N
 
 # ---------------- Users ----------------
 @router.get("/users", response_model=list[UserOut])
-def list_users(db: DbSession, user: EditorUser) -> list[User]:
+def list_users(db: DbSession, user: PublisherUser) -> list[User]:
     return db.query(User).order_by(User.name).all()
 
 
@@ -239,7 +239,7 @@ async def upload_for_editor(
 
 
 @router.delete("/media/{media_id}", status_code=204)
-def delete_media(db: DbSession, user: EditorUser, media_id: int) -> None:
+def delete_media(db: DbSession, user: PublisherUser, media_id: int) -> None:
     media = db.get(Media, media_id)
     if not media:
         raise HTTPException(status_code=404, detail="Media not found")
@@ -275,7 +275,7 @@ def list_pages_seo(db: DbSession, user: CurrentUser) -> list[PageSeo]:
 
 
 @router.put("/pages-seo/{slug}", response_model=PageSeoOut)
-async def update_page_seo(db: DbSession, user: EditorUser, slug: str, payload: PageSeoIn) -> PageSeo:
+async def update_page_seo(db: DbSession, user: PublisherUser, slug: str, payload: PageSeoIn) -> PageSeo:
     row = db.get(PageSeo, slug)
     if not row:
         raise HTTPException(status_code=404, detail="Page not found")

@@ -51,7 +51,7 @@ def status_counts(db: DbSession, user: CurrentUser) -> dict[str, int]:
     """Per-status totals for the tabs on the articles list."""
     publish_due_posts(db)
     query = db.query(Post.status, func.count(Post.id))
-    if user.role == Role.author:
+    if user.role == Role.editor:
         query = query.filter(Post.author_id == user.id)
     counts = {status.value: 0 for status in PostStatus}
     for status, count in query.group_by(Post.status).all():
@@ -75,7 +75,7 @@ def list_posts(
     query = db.query(Post).options(
         joinedload(Post.category), joinedload(Post.author), joinedload(Post.tags), joinedload(Post.images)
     )
-    if user.role == Role.author:
+    if user.role == Role.editor:
         query = query.filter(Post.author_id == user.id)
     if status:
         query = query.filter(Post.status == status)
@@ -101,24 +101,24 @@ def list_posts(
     )
 
 
-# Authors write; editors and admins approve. An author can only save drafts,
-# and cannot touch an article once an editor has published or scheduled it.
+# Editors write; authors and admins approve. An editor can only save drafts,
+# and cannot touch an article once an author has published or scheduled it.
 LIVE_STATUSES = (PostStatus.published, PostStatus.scheduled)
 
 
-def _check_author_status(user, requested: PostStatus | None) -> None:
-    if user.role == Role.author and requested not in (None, PostStatus.draft):
+def _check_editor_status(user, requested: PostStatus | None) -> None:
+    if user.role == Role.editor and requested not in (None, PostStatus.draft):
         raise HTTPException(
             status_code=403,
-            detail="Authors can only save drafts. An editor reviews and publishes your article.",
+            detail="Editors can only save drafts. An author reviews and publishes your article.",
         )
 
 
-def _check_author_can_change(user, post: Post) -> None:
-    if user.role == Role.author and post.status in LIVE_STATUSES:
+def _check_editor_can_change(user, post: Post) -> None:
+    if user.role == Role.editor and post.status in LIVE_STATUSES:
         raise HTTPException(
             status_code=403,
-            detail="This article has been approved by an editor. Ask an editor to change it.",
+            detail="This article has been approved by an author. Ask an author to change it.",
         )
 
 
@@ -132,9 +132,9 @@ def get_post(db: DbSession, user: CurrentUser, post_id: int) -> Post:
 
 @router.post("", response_model=PostOut, status_code=201)
 async def create_post(db: DbSession, user: CurrentUser, payload: PostCreate) -> Post:
-    _check_author_status(user, payload.status)
+    _check_editor_status(user, payload.status)
     data = payload.model_dump(exclude={"tags", "images", "slug", "content", "status", "published_at"})
-    if user.role == Role.author:
+    if user.role == Role.editor:
         data["author_id"] = user.id
     else:
         data["author_id"] = payload.author_id or user.id
@@ -162,14 +162,14 @@ async def update_post(db: DbSession, user: CurrentUser, post_id: int, payload: P
     post = _load(db, post_id)
     if not can_edit_post(user, post):
         raise HTTPException(status_code=403, detail="Not your post")
-    _check_author_can_change(user, post)
-    _check_author_status(user, payload.status)
+    _check_editor_can_change(user, post)
+    _check_editor_status(user, payload.status)
     old_paths = _paths_for(post)
 
     data = payload.model_dump(
         exclude_unset=True, exclude={"tags", "images", "slug", "content", "status", "published_at"}
     )
-    if user.role == Role.author:
+    if user.role == Role.editor:
         data.pop("author_id", None)
     for key, value in data.items():
         setattr(post, key, value)
@@ -199,7 +199,7 @@ async def delete_post(db: DbSession, user: CurrentUser, post_id: int) -> None:
     post = _load(db, post_id)
     if not can_edit_post(user, post):
         raise HTTPException(status_code=403, detail="Not your post")
-    _check_author_can_change(user, post)
+    _check_editor_can_change(user, post)
     paths = _paths_for(post)
     db.delete(post)
     db.commit()
