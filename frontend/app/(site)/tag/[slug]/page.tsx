@@ -24,7 +24,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title: `${name} - News & Analysis${pageNum > 1 ? ` - Page ${pageNum}` : ''}`,
     description: `Every ${SITE_NAME} story tagged ${name}, newest first.`,
     alternates: { canonical: pageNum > 1 ? `/tag/${slug}?page=${pageNum}` : `/tag/${slug}` },
-    robots: pageNum > 1 ? { index: false, follow: true } : undefined,
+    // Every page of a section, paginated ones included, is open to indexing.
+    robots: { index: true, follow: true },
   };
 }
 

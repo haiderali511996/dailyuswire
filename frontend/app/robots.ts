@@ -33,7 +33,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/admin/', '/api/', '/search', '/*?page=*'],
+        disallow: ['/admin', '/admin/', '/api/', '/search'],
       },
       // Let Google's news and image crawlers see everything public.
       { userAgent: 'Googlebot-News', allow: '/', disallow: ['/admin/', '/api/'] },
