@@ -47,7 +47,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       title: `${category.name} News | ${SITE_NAME}`,
       description: category.meta_description || category.description,
     },
-    robots: pageNum > 1 ? { index: false, follow: true } : undefined,
+    // Every page of a section, paginated ones included, is open to indexing.
+    robots: { index: true, follow: true },
   };
 }
 
