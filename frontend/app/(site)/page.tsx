@@ -7,7 +7,7 @@ import { FeatureCard, HeroCard, ListCard, StandardCard } from '@/components/site
 import { SectionHeading } from '@/components/site/SectionHeading';
 import { Sidebar } from '@/components/site/Sidebar';
 import { getCategories, getPageSeo, getPosts } from '@/lib/api';
-import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/config';
+import { SITE_DESCRIPTION, SITE_NAME, pageOpenGraph } from '@/lib/config';
 import type { Metadata } from 'next';
 
 export const revalidate = 60;
@@ -22,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: seo?.description || SITE_DESCRIPTION,
     alternates: { canonical: '/' },
+    openGraph: pageOpenGraph('/', undefined, seo?.description || SITE_DESCRIPTION),
   };
 }
 

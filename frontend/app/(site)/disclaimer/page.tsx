@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Prose } from '@/components/site/Prose';
-import { SITE_NAME } from '@/lib/config';
+import { SITE_NAME, pageOpenGraph } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Disclaimer',
   description: `Editorial, medical, financial and affiliate disclaimers for ${SITE_NAME}.`,
   alternates: { canonical: '/disclaimer' },
+  openGraph: pageOpenGraph('/disclaimer', `Disclaimer | ${SITE_NAME}`, `Editorial, medical, financial and affiliate disclaimers for ${SITE_NAME}.`),
 };
 
 export default function DisclaimerPage() {

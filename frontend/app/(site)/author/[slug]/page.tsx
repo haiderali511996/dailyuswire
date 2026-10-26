@@ -8,7 +8,7 @@ import { Pagination } from '@/components/site/Pagination';
 import { StandardCard } from '@/components/site/PostCard';
 import { getAuthor, getPosts } from '@/lib/api';
 import { authorBio } from '@/lib/author';
-import { SITE_NAME, SITE_URL, absoluteMediaUrl } from '@/lib/config';
+import { SITE_NAME, SITE_URL, absoluteMediaUrl, absoluteUrl } from '@/lib/config';
 
 export const revalidate = 300;
 
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${person} - Author`,
     description: authorBio(author.bio),
     alternates: { canonical: `/author/${slug}` },
-    openGraph: { type: 'profile', title: person, description: authorBio(author.bio) },
+    openGraph: { type: 'profile', siteName: SITE_NAME, url: absoluteUrl(`/author/${slug}`), title: person, description: authorBio(author.bio) },
   };
 }
 

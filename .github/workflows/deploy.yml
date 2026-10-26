@@ -456,3 +456,24 @@ jobs:
             echo
           done
           exit $fail
+
+      # Every page must carry the same Search Console code and its own og:url.
+      # Print both for a few pages so a mismatch is visible in this log.
+      - name: Check verification tag and og:url
+        env:
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
+        run: |
+          set -uo pipefail
+          codes=""
+          for path in / /about /contact /privacy-policy /editorial-policy; do
+            html=$(curl -sS --max-time 30 "$SITE_URL$path") || html=""
+            code=$(echo "$html" | grep -oE 'name="google-site-verification" content="[^"]*"' | sed -E 's/.*content="([^"]*)"/\1/' | sort -u | tr '\n' ' ')
+            og=$(echo "$html" | grep -oE 'property="og:url" content="[^"]*"' | sed -E 's/.*content="([^"]*)"/\1/')
+            echo "$path  verification=[${code% }]  og:url=$og"
+            codes="$codes${code% }"$'\n'
+          done
+          distinct=$(echo "$codes" | sed '/^$/d' | sort -u | wc -l)
+          if [ "$distinct" -gt 1 ]; then
+            echo "::warning::Pages carry $distinct different google-site-verification codes."
+          fi
+

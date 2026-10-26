@@ -3,16 +3,19 @@ import Link from 'next/link';
 
 import { Prose } from '@/components/site/Prose';
 import { getPageSeo } from '@/lib/api';
-import { SITE_NAME } from '@/lib/config';
+import { SITE_NAME, pageOpenGraph } from '@/lib/config';
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo('about');
+  const title = seo?.title || 'About Us';
+  const description =
+    seo?.description ||
+    `Who we are, what we cover and how ${SITE_NAME} reports the news across eight desks.`;
   return {
-    title: seo?.title || 'About Us',
-    description:
-      seo?.description ||
-      `Who we are, what we cover and how ${SITE_NAME} reports the news across eight desks.`,
+    title,
+    description,
     alternates: { canonical: '/about' },
+    openGraph: pageOpenGraph('/about', `${title} | ${SITE_NAME}`, description),
   };
 }
 

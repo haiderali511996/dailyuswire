@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
@@ -9,7 +11,7 @@ from app.config import settings
 from app.database import Base, SessionLocal, apply_mysql_table_options, engine
 from app.models import Category, PageSeo, Role, Setting, User
 from app.services.categories import reorder_categories
-from app.services.posts import strip_chatgpt_links, trim_breaking
+from app.services.posts import fix_blood_pressure_sources, strip_chatgpt_links, trim_breaking
 from app.services.purge import remove_crypto
 from app.utils.security import hash_password
 from app.utils.text import slugify
@@ -192,11 +194,10 @@ def ensure_columns() -> None:
 
 
 # The person behind the desk byline: articles stay "Daily US Wire Staff", the
-# author page names Ahmad Iftikhar with his photo and LinkedIn. Each step is
-# applied once (tracked in settings) so later edits in Team stick.
+# author page names Ahmad Iftikhar with his photo. Each step is applied once
+# (tracked in settings) so later edits in Team stick.
 STAFF_AUTHOR_SLUG = "daily-us-wire-staff"
 STAFF_PROFILE_STEPS: list[tuple[str, str, str]] = [
-    ("seeded_staff_linkedin", "linkedin", "https://www.linkedin.com/in/ahmad-iftikhar/"),
     ("seeded_staff_profile_name", "profile_name", "Ahmad Iftikhar"),
     ("seeded_staff_avatar", "avatar", "/authors/ahmad-iftikhar.jpg"),
 ]
@@ -210,6 +211,36 @@ def seed_staff_profile(db: Session) -> None:
         if user and not getattr(user, field):
             setattr(user, field, value)
         db.add(Setting(key=flag, value="1"))
+    db.commit()
+
+
+GMAIL_RE = re.compile(r"[\w.+-]+@(?:gmail|googlemail)\.com", re.IGNORECASE)
+EDITOR_EMAIL = "editor@dailyuswire.com"
+
+
+def clean_author_identity(db: Session) -> None:
+    """Once: take the personal LinkedIn off the staff author page, and swap any
+    personal Gmail address written into a public bio for the newsroom address.
+    Login emails are left alone - they are never shown on the site."""
+    flag = "cleaned_author_identity"
+    if db.get(Setting, flag):
+        return
+    staff = db.query(User).filter(User.slug == STAFF_AUTHOR_SLUG).one_or_none()
+    if staff:
+        staff.linkedin = ""
+    for user in db.query(User).all():
+        if user.bio and GMAIL_RE.search(user.bio):
+            user.bio = GMAIL_RE.sub(EDITOR_EMAIL, user.bio)
+    db.add(Setting(key=flag, value="1"))
+    db.commit()
+
+
+def fix_sources_once(db: Session) -> None:
+    flag = "fixed_bp_sources"
+    if db.get(Setting, flag):
+        return
+    fix_blood_pressure_sources(db)
+    db.add(Setting(key=flag, value="1"))
     db.commit()
 
 
@@ -228,4 +259,6 @@ def run() -> None:
         trim_breaking(db)
         strip_chatgpt_links(db)  # ChatGPT tracking tags on cited links
         seed_staff_profile(db)
+        clean_author_identity(db)
+        fix_sources_once(db)
         db.commit()
