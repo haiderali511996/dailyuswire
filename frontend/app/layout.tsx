@@ -54,7 +54,6 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: 'website',
       locale: 'en_US',
-      url: SITE_URL,
       siteName: SITE_NAME,
       title: `${SITE_NAME} - Breaking US News & Analysis`,
       description: SITE_DESCRIPTION,

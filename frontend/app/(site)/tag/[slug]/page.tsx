@@ -5,7 +5,7 @@ import { Breadcrumbs } from '@/components/site/Breadcrumbs';
 import { Pagination } from '@/components/site/Pagination';
 import { StandardCard } from '@/components/site/PostCard';
 import { getPosts } from '@/lib/api';
-import { SITE_NAME } from '@/lib/config';
+import { SITE_NAME, pageOpenGraph } from '@/lib/config';
 
 export const revalidate = 300;
 
@@ -20,10 +20,12 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const { page } = await searchParams;
   const pageNum = Math.max(1, Number(page) || 1);
   const name = pretty(slug);
+  const canonical = pageNum > 1 ? `/tag/${slug}?page=${pageNum}` : `/tag/${slug}`;
   return {
     title: `${name} - News & Analysis${pageNum > 1 ? ` - Page ${pageNum}` : ''}`,
     description: `Every ${SITE_NAME} story tagged ${name}, newest first.`,
-    alternates: { canonical: pageNum > 1 ? `/tag/${slug}?page=${pageNum}` : `/tag/${slug}` },
+    alternates: { canonical },
+    openGraph: pageOpenGraph(canonical, `${name} News | ${SITE_NAME}`, `Every ${SITE_NAME} story tagged ${name}, newest first.`),
     // Every page of a section, paginated ones included, is open to indexing.
     robots: { index: true, follow: true },
   };

@@ -71,6 +71,23 @@ export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+/**
+ * Open Graph tags for one page. Next replaces the layout's openGraph object
+ * rather than merging it, so a page that set none would inherit og:url of the
+ * homepage; every page passes its own path through here instead.
+ */
+export function pageOpenGraph(path: string, title?: string, description?: string) {
+  return {
+    type: 'website' as const,
+    locale: 'en_US',
+    siteName: SITE_NAME,
+    url: absoluteUrl(path),
+    title: title ?? `${SITE_NAME} - Breaking US News & Analysis`,
+    description: description ?? SITE_DESCRIPTION,
+    images: [{ url: '/logo.png', width: 900, height: 210, alt: SITE_NAME }],
+  };
+}
+
 export function postPath(post: { slug: string; category?: { slug: string } | null }): string {
   return `/${post.category?.slug ?? 'news'}/${post.slug}`;
 }

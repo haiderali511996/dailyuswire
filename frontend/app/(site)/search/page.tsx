@@ -7,12 +7,14 @@ import { StandardCard } from '@/components/site/PostCard';
 import { SearchBox } from '@/components/site/SearchBox';
 import { Sidebar } from '@/components/site/Sidebar';
 import { getPosts } from '@/lib/api';
+import { SITE_NAME, pageOpenGraph } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Search',
   description: 'Search every story across news, health, sports, technology, entertainment, business, lifestyle and marketing.',
   // Search result pages must never enter the index (thin/duplicate content).
   robots: { index: false, follow: true },
+  openGraph: pageOpenGraph('/search', `Search | ${SITE_NAME}`),
 };
 
 type Props = { searchParams: Promise<{ q?: string; page?: string }> };

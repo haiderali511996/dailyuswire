@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Prose } from '@/components/site/Prose';
-import { SITE_NAME } from '@/lib/config';
+import { SITE_NAME, pageOpenGraph } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: `How ${SITE_NAME} collects, uses and protects your data, including cookies, analytics and advertising partners.`,
   alternates: { canonical: '/privacy-policy' },
+  openGraph: pageOpenGraph('/privacy-policy', `Privacy Policy | ${SITE_NAME}`, `How ${SITE_NAME} collects, uses and protects your data, including cookies, analytics and advertising partners.`),
 };
 
 export default function PrivacyPage() {

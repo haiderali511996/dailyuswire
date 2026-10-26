@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Prose } from '@/components/site/Prose';
-import { SITE_NAME } from '@/lib/config';
+import { SITE_NAME, pageOpenGraph } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Editorial Policy',
   description: `How ${SITE_NAME} sources, writes, fact-checks and corrects its reporting.`,
   alternates: { canonical: '/editorial-policy' },
+  openGraph: pageOpenGraph('/editorial-policy', `Editorial Policy | ${SITE_NAME}`, `How ${SITE_NAME} sources, writes, fact-checks and corrects its reporting.`),
 };
 
 export default function EditorialPolicyPage() {

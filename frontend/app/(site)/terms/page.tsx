@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Prose } from '@/components/site/Prose';
-import { SITE_NAME } from '@/lib/config';
+import { SITE_NAME, pageOpenGraph } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: `The terms that govern your use of ${SITE_NAME}.`,
   alternates: { canonical: '/terms' },
+  openGraph: pageOpenGraph('/terms', `Terms of Service | ${SITE_NAME}`, `The terms that govern your use of ${SITE_NAME}.`),
 };
 
 export default function TermsPage() {

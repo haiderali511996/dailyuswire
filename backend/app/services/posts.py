@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 
 import httpx
@@ -175,3 +176,88 @@ def strip_chatgpt_links(db: Session) -> int:
             setattr(post, f, strip_chatgpt_utm(getattr(post, f) or ""))
     db.commit()
     return len(posts)
+
+
+_ANCHOR_RE = re.compile(r"<a\b[^>]*>.*?</a>", re.IGNORECASE | re.DOTALL)
+
+
+def unlink_domain(html: str, domain: str) -> str:
+    """Unwrap every <a> pointing at `domain` (or a subdomain), keeping its text."""
+    pattern = re.compile(
+        r"<a\b[^>]*href=[\"']?(?:https?:)?//(?:[\w-]+\.)*" + re.escape(domain)
+        + r"(?:[/?#:\"'\s][^>]*)?>(.*?)</a>",
+        re.IGNORECASE | re.DOTALL,
+    )
+    return pattern.sub(r"\1", html)
+
+
+def link_first_mention(html: str, phrase: str, href: str) -> tuple[str, bool]:
+    """Link the first mention of `phrase` that is plain text, not already a link
+    or inside a tag. Returns the new HTML and whether a link was added."""
+    word = re.compile(r"(?<![\w-])" + re.escape(phrase) + r"(?![\w-])")
+    out: list[str] = []
+    pos = 0
+    done = False
+    for anchor in _ANCHOR_RE.finditer(html):
+        out.append(html[pos:anchor.start()])
+        out.append(anchor.group(0))
+        pos = anchor.end()
+    out.append(html[pos:])
+    # Even indexes are text between anchors; odd ones are existing links.
+    for i in range(0, len(out), 2):
+        if done:
+            break
+        parts = re.split(r"(<[^>]+>)", out[i])
+        for j in range(0, len(parts), 2):
+            m = word.search(parts[j])
+            if m:
+                link = (
+                    f'<a href="{href}" target="_blank" rel="noopener noreferrer">'
+                    f"{m.group(0)}</a>"
+                )
+                parts[j] = parts[j][: m.start()] + link + parts[j][m.end():]
+                done = True
+                break
+        out[i] = "".join(parts)
+    return "".join(out), done
+
+
+# Primary sources for the bodies the blood-pressure coverage cites by name.
+# The first matching phrase per source is linked; acronyms come last so the
+# full name wins when both appear.
+BP_SOURCES: list[tuple[tuple[str, ...], str]] = [
+    (("American Heart Association", "AHA"), "https://www.heart.org/en/health-topics/high-blood-pressure"),
+    (("National Institutes of Health", "NHLBI", "NIH"), "https://www.nhlbi.nih.gov/health/high-blood-pressure"),
+    (("National Institute for Health and Care Excellence", "NICE"), "https://www.nice.org.uk/guidance/ng136"),
+    (("Centers for Disease Control and Prevention", "CDC"), "https://www.cdc.gov/high-blood-pressure/index.html"),
+]
+
+
+def fix_blood_pressure_sources(db: Session, spam_domain: str = "tips-and-tricks.co") -> int:
+    """Drop the keyword-anchor link to `spam_domain` from every post, and link
+    the health bodies the blood-pressure articles name to their own pages."""
+    touched = 0
+    spam = db.query(Post).filter(Post.content.ilike(f"%{spam_domain}%")).all()
+    bp = (
+        db.query(Post)
+        .filter(or_(
+            Post.title.ilike("%blood pressure%"),
+            Post.title.ilike("%hypertension%"),
+            Post.slug.ilike("%blood-pressure%"),
+        ))
+        .all()
+    )
+    for post in {p.id: p for p in [*spam, *bp]}.values():
+        html = unlink_domain(post.content or "", spam_domain)
+        for phrases, href in BP_SOURCES:
+            if href in html:
+                continue
+            for phrase in phrases:
+                html, added = link_first_mention(html, phrase, href)
+                if added:
+                    break
+        if html != (post.content or ""):
+            post.content = html
+            touched += 1
+    db.commit()
+    return touched

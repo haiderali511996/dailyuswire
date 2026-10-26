@@ -2,16 +2,19 @@ import type { Metadata } from 'next';
 
 import { Prose } from '@/components/site/Prose';
 import { getPageSeo } from '@/lib/api';
-import { SITE_NAME } from '@/lib/config';
+import { SITE_NAME, pageOpenGraph } from '@/lib/config';
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo('contact');
+  const title = seo?.title || 'Contact Us';
+  const description =
+    seo?.description ||
+    `Get in touch with the ${SITE_NAME} team with questions, feedback or enquiries.`;
   return {
-    title: seo?.title || 'Contact Us',
-    description:
-      seo?.description ||
-      `Get in touch with the ${SITE_NAME} team with questions, feedback or enquiries.`,
+    title,
+    description,
     alternates: { canonical: '/contact' },
+    openGraph: pageOpenGraph('/contact', `${title} | ${SITE_NAME}`, description),
   };
 }
 
