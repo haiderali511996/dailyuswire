@@ -40,7 +40,8 @@ export const SOCIAL_LINKS = {
   linkedin: 'https://www.linkedin.com/company/dailyuswire',
 };
 
-export const ADSENSE_CLIENT = orElse(process.env.NEXT_PUBLIC_ADSENSE_CLIENT, '');
+/** The site's AdSense publisher ID; drives /ads.txt and the AdSense script. */
+export const ADSENSE_CLIENT = orElse(process.env.NEXT_PUBLIC_ADSENSE_CLIENT, 'ca-pub-9155422008983267');
 export const GA_ID = orElse(process.env.NEXT_PUBLIC_GA_ID, '');
 export const GSC_VERIFICATION = orElse(process.env.NEXT_PUBLIC_GSC_VERIFICATION, '');
 
