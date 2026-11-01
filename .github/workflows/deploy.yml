@@ -429,6 +429,18 @@ jobs:
 
           echo "Deployment verified."
 
+      # Show what the live API and site now print for the main byline.
+      - name: Check the author byline
+        env:
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
+        run: |
+          set -uo pipefail
+          echo "API  /api/authors/ahmad-iftikhar:"
+          curl -sS --max-time 30 "$API_URL/api/authors/ahmad-iftikhar" | head -c 400; echo
+          echo "Site /author/daily-us-wire-staff -> $(curl -sS -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 30 "$SITE_URL/author/daily-us-wire-staff")"
+          echo "Site /author/ahmad-iftikhar h1: $(curl -sS --max-time 30 "$SITE_URL/author/ahmad-iftikhar" | grep -oE '<h1[^>]*>[^<]*</h1>' | head -1)"
+
       # Search Console reports "Couldn't fetch" without saying why. Fetch the
       # SEO files the way Googlebot does and print what comes back, so the
       # answer is in this log.
