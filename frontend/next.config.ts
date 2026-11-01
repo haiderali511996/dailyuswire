@@ -117,7 +117,11 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
-    return [{ source: '/home', destination: '/', permanent: true }];
+    return [
+      { source: '/home', destination: '/', permanent: true },
+      // The author page moved when the desk byline became Ahmad Iftikhar.
+      { source: '/author/daily-us-wire-staff', destination: '/author/ahmad-iftikhar', permanent: true },
+    ];
   },
 };
 

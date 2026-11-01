@@ -56,7 +56,7 @@ export default function UsersPage() {
     const others = users.filter((u) => u.id !== user.id && u.is_active);
     // Default to the desk byline, then any other author, then whoever is deleting.
     const heir =
-      others.find((u) => u.slug === 'daily-us-wire-staff') ??
+      others.find((u) => u.slug === 'ahmad-iftikhar' || u.slug === 'daily-us-wire-staff') ??
       others.find((u) => u.role === 'author') ??
       others.find((u) => u.id === me?.id) ??
       others[0];

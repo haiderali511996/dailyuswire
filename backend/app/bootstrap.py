@@ -196,7 +196,16 @@ def ensure_columns() -> None:
 # The person behind the former desk byline: the author page names Ahmad
 # Iftikhar with his photo. Each step is applied once
 # (tracked in settings) so later edits in Team stick.
-STAFF_AUTHOR_SLUG = "daily-us-wire-staff"
+STAFF_AUTHOR_SLUG = "ahmad-iftikhar"
+OLD_STAFF_AUTHOR_SLUG = "daily-us-wire-staff"
+
+
+def _staff_user(db: Session) -> User | None:
+    return (
+        db.query(User).filter(User.slug == STAFF_AUTHOR_SLUG).one_or_none()
+        or db.query(User).filter(User.slug == OLD_STAFF_AUTHOR_SLUG).one_or_none()
+    )
+
 STAFF_PROFILE_STEPS: list[tuple[str, str, str]] = [
     ("seeded_staff_profile_name", "profile_name", "Ahmad Iftikhar"),
     ("seeded_staff_avatar", "avatar", "/authors/ahmad-iftikhar.jpg"),
@@ -208,12 +217,11 @@ STAFF_BYLINE = "Ahmad Iftikhar"
 
 def rename_staff_byline(db: Session) -> None:
     """Once: publish under Ahmad Iftikhar's own name instead of the
-    "Daily US Wire Staff" desk byline. The author URL is kept so existing
-    links keep working; later renames made in Team stick."""
+    "Daily US Wire Staff" desk byline. Later renames made in Team stick."""
     flag = "renamed_staff_byline"
     if db.get(Setting, flag):
         return
-    user = db.query(User).filter(User.slug == STAFF_AUTHOR_SLUG).one_or_none()
+    user = _staff_user(db)
     if user:
         user.name = STAFF_BYLINE
         # The byline now is the person, so the separate profile name is redundant.
@@ -222,8 +230,22 @@ def rename_staff_byline(db: Session) -> None:
     db.commit()
 
 
+def move_staff_author_url(db: Session) -> None:
+    """Once: move the author page from /author/daily-us-wire-staff to
+    /author/ahmad-iftikhar. The frontend permanently redirects the old URL."""
+    flag = "moved_staff_author_url"
+    if db.get(Setting, flag):
+        return
+    taken = db.query(User).filter(User.slug == STAFF_AUTHOR_SLUG).one_or_none()
+    user = db.query(User).filter(User.slug == OLD_STAFF_AUTHOR_SLUG).one_or_none()
+    if user and not taken:
+        user.slug = STAFF_AUTHOR_SLUG
+    db.add(Setting(key=flag, value="1"))
+    db.commit()
+
+
 def seed_staff_profile(db: Session) -> None:
-    user = db.query(User).filter(User.slug == STAFF_AUTHOR_SLUG).one_or_none()
+    user = _staff_user(db)
     for flag, field, value in STAFF_PROFILE_STEPS:
         if db.get(Setting, flag):
             continue
@@ -244,7 +266,7 @@ def clean_author_identity(db: Session) -> None:
     flag = "cleaned_author_identity"
     if db.get(Setting, flag):
         return
-    staff = db.query(User).filter(User.slug == STAFF_AUTHOR_SLUG).one_or_none()
+    staff = _staff_user(db)
     if staff:
         staff.linkedin = ""
     for user in db.query(User).all():
@@ -279,6 +301,7 @@ def run() -> None:
         strip_chatgpt_links(db)  # ChatGPT tracking tags on cited links
         seed_staff_profile(db)
         rename_staff_byline(db)
+        move_staff_author_url(db)
         clean_author_identity(db)
         fix_sources_once(db)
         db.commit()
