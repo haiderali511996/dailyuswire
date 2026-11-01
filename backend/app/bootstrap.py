@@ -193,14 +193,33 @@ def ensure_columns() -> None:
                     conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
 
 
-# The person behind the desk byline: articles stay "Daily US Wire Staff", the
-# author page names Ahmad Iftikhar with his photo. Each step is applied once
+# The person behind the former desk byline: the author page names Ahmad
+# Iftikhar with his photo. Each step is applied once
 # (tracked in settings) so later edits in Team stick.
 STAFF_AUTHOR_SLUG = "daily-us-wire-staff"
 STAFF_PROFILE_STEPS: list[tuple[str, str, str]] = [
     ("seeded_staff_profile_name", "profile_name", "Ahmad Iftikhar"),
     ("seeded_staff_avatar", "avatar", "/authors/ahmad-iftikhar.jpg"),
 ]
+
+
+STAFF_BYLINE = "Ahmad Iftikhar"
+
+
+def rename_staff_byline(db: Session) -> None:
+    """Once: publish under Ahmad Iftikhar's own name instead of the
+    "Daily US Wire Staff" desk byline. The author URL is kept so existing
+    links keep working; later renames made in Team stick."""
+    flag = "renamed_staff_byline"
+    if db.get(Setting, flag):
+        return
+    user = db.query(User).filter(User.slug == STAFF_AUTHOR_SLUG).one_or_none()
+    if user:
+        user.name = STAFF_BYLINE
+        # The byline now is the person, so the separate profile name is redundant.
+        user.profile_name = ""
+    db.add(Setting(key=flag, value="1"))
+    db.commit()
 
 
 def seed_staff_profile(db: Session) -> None:
@@ -259,6 +278,7 @@ def run() -> None:
         trim_breaking(db)
         strip_chatgpt_links(db)  # ChatGPT tracking tags on cited links
         seed_staff_profile(db)
+        rename_staff_byline(db)
         clean_author_identity(db)
         fix_sources_once(db)
         db.commit()
