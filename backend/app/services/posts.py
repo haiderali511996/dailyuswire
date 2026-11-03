@@ -10,7 +10,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.models import Post, PostImage, PostStatus, Tag
+from app.models import Post, PostImage, PostSlugRedirect, PostStatus, Tag
 from app.utils.seo import post_url
 from app.utils.text import (
     add_heading_ids,
@@ -106,7 +106,53 @@ def apply_status(post: Post, status: PostStatus | None, published_at: datetime |
 def ensure_slug(db: Session, post: Post, requested: str | None) -> None:
     source = requested or post.slug or post.title
     if not post.slug or (requested and slugify(requested) != post.slug):
+        previous = post.slug
         post.slug = unique_slug(db, Post, source, exclude_id=post.id)
+        if previous and previous != post.slug and post.id is not None:
+            remember_old_slug(db, post, previous)
+
+
+def remember_old_slug(db: Session, post: Post, old_slug: str) -> None:
+    """Keep ``old_slug`` pointing at ``post`` so links already out there redirect."""
+    # The new slug is live again, so it must not also be a redirect.
+    db.query(PostSlugRedirect).filter(PostSlugRedirect.old_slug == post.slug).delete(
+        synchronize_session=False
+    )
+    row = db.query(PostSlugRedirect).filter(PostSlugRedirect.old_slug == old_slug).one_or_none()
+    if row:
+        row.post_id = post.id
+    else:
+        db.add(PostSlugRedirect(old_slug=old_slug, post_id=post.id))
+
+
+# "...-what-it-means-for-users-1": a trailing number that is not part of the
+# article's real slug. Search engines have such addresses on record for
+# articles whose slug later lost the suffix.
+_NUMBER_SUFFIX = re.compile(r"^(?P<base>.+?)-\d+$")
+
+
+def resolve_moved_slug(db: Session, slug: str) -> str | None:
+    """The current slug for an address that no longer matches one directly.
+
+    Checks the slug history first, then the same slug with a trailing ``-<n>``
+    removed. Returns None when nothing matches, so a real miss stays a 404.
+    """
+    row = db.query(PostSlugRedirect).filter(PostSlugRedirect.old_slug == slug).one_or_none()
+    if row:
+        post = db.get(Post, row.post_id)
+        if post:
+            return post.slug
+    match = _NUMBER_SUFFIX.match(slug)
+    if match:
+        base = match.group("base")
+        if db.query(Post.id).filter(Post.slug == base).first():
+            return base
+        row = db.query(PostSlugRedirect).filter(PostSlugRedirect.old_slug == base).one_or_none()
+        if row:
+            post = db.get(Post, row.post_id)
+            if post:
+                return post.slug
+    return None
 
 
 def trim_breaking(db: Session, keep: int = MAX_BREAKING_POSTS) -> int:

@@ -20,7 +20,7 @@ from app.schemas import (
     SubscribeIn,
     TagOut,
 )
-from app.services.posts import publish_due_posts
+from app.services.posts import publish_due_posts, resolve_moved_slug
 from app.utils.seo import breadcrumbs, iso_utc, news_article
 from app.utils.text import strip_tags
 
@@ -119,17 +119,31 @@ def trending(db: DbSession, response: Response, limit: int = Query(6, ge=1, le=2
 
 @router.get("/posts/{slug}", response_model=PostOut)
 def get_post(db: DbSession, slug: str, response: Response) -> Post:
+    """One article by slug.
+
+    An old or numbered address (``...-users-1``) resolves to the article it
+    belongs to. The returned ``slug`` then differs from the one requested, and
+    the front end answers with a permanent redirect to the current URL.
+    """
     publish_due_posts(db)
-    post = (
+    post = _published_by_slug(db, slug)
+    if not post:
+        current = resolve_moved_slug(db, slug)
+        if current and current != slug:
+            post = _published_by_slug(db, current)
+    if not post:
+        raise HTTPException(status_code=404, detail="Article not found")
+    response.headers["Cache-Control"] = CACHE
+    return post
+
+
+def _published_by_slug(db: Session, slug: str) -> Post | None:
+    return (
         _published(db)
         .options(joinedload(Post.tags), joinedload(Post.images))
         .filter(Post.slug == slug)
         .one_or_none()
     )
-    if not post:
-        raise HTTPException(status_code=404, detail="Article not found")
-    response.headers["Cache-Control"] = CACHE
-    return post
 
 
 @router.post("/posts/{slug}/view", status_code=204)

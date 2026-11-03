@@ -157,6 +157,22 @@ class PostImage(Base):
     post: Mapped[Post] = relationship(back_populates="images")
 
 
+class PostSlugRedirect(Base):
+    """An address an article used to live at, kept so old links keep working.
+
+    Written whenever an article's slug changes. The public lookup falls back to
+    this table on a miss and the front end answers with a permanent redirect to
+    the current URL, so Google moves its index entry instead of reporting 404.
+    """
+
+    __tablename__ = "post_slug_redirects"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    old_slug: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="CASCADE"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class Media(Base):
     __tablename__ = "media"
 

@@ -5,7 +5,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentUser, DbSession, can_edit_post
-from app.models import Post, PostStatus, Role
+from app.models import Post, PostSlugRedirect, PostStatus, Role
 from app.schemas import (
     AdminPaginated,
     PostCreate,
@@ -201,6 +201,11 @@ async def delete_post(db: DbSession, user: CurrentUser, post_id: int) -> None:
         raise HTTPException(status_code=403, detail="Not your post")
     _check_editor_can_change(user, post)
     paths = _paths_for(post)
+    # SQLite does not enforce ON DELETE CASCADE unless asked, so clear the
+    # slug history by hand rather than leave rows pointing at nothing.
+    db.query(PostSlugRedirect).filter(PostSlugRedirect.post_id == post.id).delete(
+        synchronize_session=False
+    )
     db.delete(post)
     db.commit()
     await revalidate_frontend(paths)

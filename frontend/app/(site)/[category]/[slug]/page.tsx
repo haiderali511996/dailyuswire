@@ -76,9 +76,15 @@ export default async function ArticlePage({ params }: Props) {
   const post = await getPost(slug);
   if (!post) notFound();
 
-  // Keep one canonical URL per article: /<real-category>/<slug>.
+  // Keep one canonical URL per article: /<real-category>/<slug>. An old or
+  // numbered address (".../some-story-12") comes back from the API as the
+  // article it belongs to, under its current slug, and is moved there with a
+  // permanent redirect so search engines replace the old URL instead of
+  // reporting it as 404.
   const realCategory = post.category?.slug ?? 'news';
-  if (realCategory !== categorySlug) permanentRedirect(postPath(post));
+  if (realCategory !== categorySlug || post.slug !== slug) {
+    permanentRedirect(postPath(post));
+  }
 
   const [related, trending, schema] = await Promise.all([
     getRelated(slug, 4),
