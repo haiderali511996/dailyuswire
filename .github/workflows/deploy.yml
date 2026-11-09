@@ -441,6 +441,21 @@ jobs:
           echo "Site /author/daily-us-wire-staff -> $(curl -sS -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 30 "$SITE_URL/author/daily-us-wire-staff")"
           echo "Site /author/ahmad-iftikhar h1: $(curl -sS --max-time 30 "$SITE_URL/author/ahmad-iftikhar" | grep -oE '<h1[^>]*>[^<]*</h1>' | head -1)"
 
+      # AdSense reports "Ads.txt: Not found" until this URL returns 200 with
+      # the publisher line. Print it so the answer is in the deploy log.
+      - name: Check ads.txt
+        env:
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || secrets.NEXT_PUBLIC_SITE_URL }}
+        run: |
+          set -uo pipefail
+          code=$(curl -sS -L -o ads.txt -w '%{http_code}' --max-time 30 "$SITE_URL/ads.txt") || code=000
+          echo "$SITE_URL/ads.txt -> HTTP $code"
+          cat ads.txt; echo
+          if [ "$code" != "200" ] || ! grep -qE '^google\.com, pub-[0-9]+, DIRECT' ads.txt; then
+            echo "::error::ads.txt is not being served correctly."
+            exit 1
+          fi
+
       # Search Console reports "Couldn't fetch" without saying why. Fetch the
       # SEO files the way Googlebot does and print what comes back, so the
       # answer is in this log.
