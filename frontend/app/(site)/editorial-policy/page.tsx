@@ -13,17 +13,17 @@ export const metadata: Metadata = {
 
 export default function EditorialPolicyPage() {
   return (
-    <Prose title="Editorial Policy" updated="October 23, 2026">
+    <Prose title="Editorial Policy" updated="November 14, 2026">
       <p>
-        This page sets out how {SITE_NAME} produces its journalism. It is a working standard our
-        editors and author hold every article to, not a marketing statement.
+        This page sets out how {SITE_NAME} produces its articles. It is a working standard every
+        article is held to, not a marketing statement.
       </p>
 
       <h2>Originality</h2>
       <p>
-        We publish original writing. Where a story starts from another outlet&apos;s reporting, we
-        verify it independently where we can, write it in our own words, add our own analysis, and
-        credit and link to the original. We do not republish other outlets&apos; article text.
+        Where a story starts from another outlet&apos;s reporting, we check it against primary
+        sources where we can, write it in our own words, separate what is confirmed from what is
+        only claimed, and credit and link to the original. We do not republish other outlets&apos; article text.
       </p>
 
       <h2>Sourcing</h2>
@@ -45,13 +45,12 @@ export default function EditorialPolicyPage() {
       </p>
       <ol>
         <li>
-          <strong>Editor submits for review.</strong> Our editors write and research articles and
-          submit them for review. An editor cannot publish an article.
+          <strong>Draft.</strong> A draft is researched and written, often with the help of AI
+          writing tools (see below).
         </li>
         <li>
-          <strong>Author approves and publishes.</strong> Our author reads each submitted article,
-          checks its facts and sources, and either sends it back for changes or approves and
-          publishes it.
+          <strong>Author review.</strong> Our author reads the draft, checks its facts against the
+          linked sources, edits it, and either rejects it or approves and publishes it.
         </li>
       </ol>
       <p>
@@ -62,9 +61,10 @@ export default function EditorialPolicyPage() {
 
       <h2>AI use</h2>
       <p>
-        We may use software to help monitor wire feeds, transcribe audio or suggest headlines. No
-        article is published without our author reading, verifying, approving and taking
-        responsibility for it. We do not publish machine-generated text as reporting.
+        We use AI writing tools to help research and draft articles. AI drafts can contain errors,
+        so no article is published until our author has read it, checked its claims against the
+        sources it cites, edited it and taken responsibility for it. We do not present AI-assisted
+        explainers as first-hand reporting.
       </p>
 
       <h2>Corrections</h2>

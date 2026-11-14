@@ -35,9 +35,8 @@ export default function TermsPage() {
 
       <h2>Content approval and responsibility</h2>
       <p>
-        Articles on {SITE_NAME} are written by our editors and submitted for review. Our author
-        reviews each submitted article, approves it and publishes it; editors cannot publish an
-        article themselves. The author decides what is published and is responsible for the
+        Articles on {SITE_NAME} are drafted, often with the help of AI writing tools, and then
+        reviewed, edited and published by our author. The author decides what is published and is responsible for the
         accuracy of published content and for any corrections. Requests about a published article, including corrections and removal
         requests, should be sent to <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>{' '}
         and are handled by the author.

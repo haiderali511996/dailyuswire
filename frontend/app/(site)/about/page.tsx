@@ -23,8 +23,8 @@ export default function AboutPage() {
   return (
     <Prose title={`About ${SITE_NAME}`}>
       <p>
-        {SITE_NAME} is an independent digital newsroom publishing original reporting and analysis
-        across eight desks: <Link href="/news">News</Link>, <Link href="/health">Health</Link>,{' '}
+        {SITE_NAME} is a small independent news site publishing explainers and analysis across
+        eight sections: <Link href="/news">News</Link>, <Link href="/health">Health</Link>,{' '}
         <Link href="/sports">Sports</Link>, <Link href="/technology">Technology</Link>,{' '}
         <Link href="/entertainment">Entertainment</Link>, <Link href="/business">Business</Link>,{' '}
         <Link href="/lifestyle">Lifestyle</Link> and <Link href="/marketing">Marketing</Link>.
@@ -33,15 +33,17 @@ export default function AboutPage() {
       <h2>What we do</h2>
       <p>
         We cover the stories that affect how people in the United States live, work, spend and
-        stay healthy. Every article is original reporting or a substantial rewrite by our editorial
-        desk. We do not republish wire copy verbatim.
+        stay healthy. Most of our stories start from news first reported elsewhere; we explain what
+        is confirmed, what is still unclear and what it means for readers, and we credit and link to
+        the outlets and primary sources we rely on. We do not republish other outlets&apos; text.
       </p>
 
       <h2>Bylines and editorial responsibility</h2>
       <p>
-        Articles are published under the byline of our author, Ahmad Iftikhar. Our editors write
-        each story and submit it for review, and the author reviews, approves and publishes it. The
-        author is responsible for its accuracy and for any corrections. Every byline links to the
+        Articles are published under the byline of Ahmad Iftikhar, who runs the site. Drafts are
+        prepared with the help of AI writing tools; Ahmad checks each one against its sources, edits
+        it and decides whether it is published. He is responsible for its accuracy and for any
+        corrections. Every byline links to the
         author&apos;s page, which collects all of their work:{' '}
         <Link href="/author/ahmad-iftikhar">Ahmad Iftikhar</Link>. To reach the author,
         write to <a href="mailto:info@dailyuswire.com">info@dailyuswire.com</a>.

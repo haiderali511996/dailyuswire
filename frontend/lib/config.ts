@@ -27,7 +27,7 @@ export const SITE_NAME = 'Daily US Wire';
 export const SITE_TAGLINE =
   'Breaking news, health, sports, technology, entertainment, business, lifestyle and marketing.';
 export const SITE_DESCRIPTION =
-  'Daily US Wire delivers breaking US news plus original reporting on health, sports, technology, entertainment, business, lifestyle and marketing.';
+  'Daily US Wire explains the news that matters to Americans, across health, sports, technology, entertainment, business, lifestyle and marketing.';
 
 export const TWITTER_HANDLE = '@dailyuswire';
 export const CONTACT_EMAIL = 'info@dailyuswire.com';

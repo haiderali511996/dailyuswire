@@ -51,14 +51,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  for (const tag of data.tags ?? []) {
-    entries.push({
-      url: `${SITE_URL}/tag/${encodeURIComponent(tag.slug)}`,
-      lastModified: stamp(tag.lastmod),
-      changeFrequency: 'daily',
-      priority: 0.5,
-    });
-  }
+  // Tag pages are left out: most hold a single story, and hundreds of
+  // near-empty listing pages read as thin content to Google.
 
   for (const post of data.posts) {
     const published = post.published_at ? new Date(post.published_at) : now;
