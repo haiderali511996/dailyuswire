@@ -148,8 +148,12 @@ def _published_by_slug(db: Session, slug: str) -> Post | None:
 
 @router.post("/posts/{slug}/view", status_code=204)
 def register_view(db: DbSession, slug: str) -> Response:
+    # Pin updated_at to itself: the column's onupdate would otherwise stamp
+    # every page view as an edit, so each read article showed a fresh
+    # "Updated" date and a new sitemap lastmod.
     db.query(Post).filter(Post.slug == slug).update(
-        {Post.views: Post.views + 1}, synchronize_session=False
+        {Post.views: Post.views + 1, Post.updated_at: Post.updated_at},
+        synchronize_session=False,
     )
     db.commit()
     return Response(status_code=204)

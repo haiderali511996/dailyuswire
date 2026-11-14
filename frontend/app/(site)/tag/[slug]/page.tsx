@@ -26,8 +26,10 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     description: `Every ${SITE_NAME} story tagged ${name}, newest first.`,
     alternates: { canonical },
     openGraph: pageOpenGraph(canonical, `${name} News | ${SITE_NAME}`, `Every ${SITE_NAME} story tagged ${name}, newest first.`),
-    // Every page of a section, paginated ones included, is open to indexing.
-    robots: { index: true, follow: true },
+    // Tag listings repeat stories that already have their own pages, and most
+    // hold one or two of them. Keep them out of the index (links still count)
+    // so they are not judged as thin content.
+    robots: { index: false, follow: true },
   };
 }
 
